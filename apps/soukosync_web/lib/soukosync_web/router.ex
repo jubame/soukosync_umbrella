@@ -7,5 +7,6 @@ defmodule SoukosyncWeb.Router do
 
   scope "/api", SoukosyncWeb do
     pipe_through :api
+    resources "/users", UserController, except: [:new, :edit]
   end
 end
