@@ -103,6 +103,25 @@ defmodule Soukosync.Sync do
     Warehouse.changeset(warehouse, %{})
   end
 
+  def get_current_user() do
+    api_base_url = Application.get_env(:soukosync, :api_base_url)
+    token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
+
+    path = "iam/users/me"
+    final = "#{api_base_url}/#{path}"
+    headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
+    options = [ssl: [verify: :verify_none]]
+    request = {'https://#{final}', headers}
+
+    :httpc.request(:get, request, options, [])
+    |> handle_response
+  end
+
+  def get_current_user_warehouses() do
+    user_id = Map.get(get_current_user(), "id")
+    get_user_warehouses(user_id)
+  end
+
   def get_user_warehouses(user_id) do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
     token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
@@ -115,6 +134,7 @@ defmodule Soukosync.Sync do
 
     :httpc.request(:get, request, options, [])
     |> handle_response
+    |> Map.get("warehouses")
   end
 
 
@@ -128,7 +148,7 @@ defmodule Soukosync.Sync do
     handle_response({status, body})
   end
   defp handle_response({200, body}) do
-    Jason.decode!(body)["warehouses"]
+    Jason.decode!(body)
   end
   defp handle_response({status, body}) do
     reason = [status: status, body: body]
