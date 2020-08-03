@@ -9,9 +9,20 @@
 # move said applications out of the umbrella.
 use Mix.Config
 
+token_oauth_api =
+  System.get_env("TOKEN") ||
+    raise """
+    environment variable TOKEN is missing.
+    You can generate one by calling: mix phx.gen.secret
+    """
+
 # Configure Mix tasks and generators
 config :soukosync,
-  ecto_repos: [Soukosync.Repo]
+  ecto_repos: [Soukosync.Repo],
+  token_oauth_api: token_oauth_api,
+  api_base_url: "show.pulpo.co/api/v1/"
+
+
 
 config :soukosync_web,
   ecto_repos: [Soukosync.Repo],

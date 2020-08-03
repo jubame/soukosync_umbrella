@@ -7,6 +7,7 @@ defmodule Soukosync.Sync do
   alias Soukosync.Repo
 
   alias Soukosync.Sync.Warehouse
+  alias Soukosync.Accounts.User
 
   @doc """
   Returns the list of warehouses.
@@ -101,4 +102,40 @@ defmodule Soukosync.Sync do
   def change_warehouse(%Warehouse{} = warehouse) do
     Warehouse.changeset(warehouse, %{})
   end
+
+  def get_user_warehouses(user_id) do
+    api_base_url = Application.get_env(:soukosync, :api_base_url)
+    token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
+
+    path = "iam/users/#{user_id}/warehouses"
+    final = "#{api_base_url}/#{path}"
+    headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
+    options = [ssl: [verify: :verify_none]]
+    request = {'https://#{final}', headers}
+
+    :httpc.request(:get, request, options, [])
+    |> handle_response
+  end
+
+
+  defp handle_response({:ok, response}) do
+    handle_response(response)
+  end
+  defp handle_response({:error, reason}) do
+    raise List.to_string(reason)
+  end
+  defp handle_response({{_version, status, _reason}, _headers, body}) do
+    handle_response({status, body})
+  end
+  defp handle_response({200, body}) do
+    Jason.decode!(body)["warehouses"]
+  end
+  defp handle_response({status, body}) do
+    reason = [status: status, body: body]
+    handle_response({:error, reason})
+  end
+
+
+
+
 end
