@@ -8,6 +8,7 @@ defmodule Soukosync.Accounts.User do
     field :first_name, :string
     field :last_name, :string
     field :username, :string
+    field :origin_id, :string
 
     timestamps()
   end
