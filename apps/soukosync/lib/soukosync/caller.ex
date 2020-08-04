@@ -1,6 +1,6 @@
 defmodule Soukosync.Caller do
   use GenServer
-  alias Soukosync.Sync
+  alias Soukosync.Accounts
 
 
   @me Caller
@@ -14,7 +14,7 @@ defmodule Soukosync.Caller do
   end
 
   def init(_) do
-    { :ok, Sync.get_and_upsert_current_user }
+    { :ok, Accounts.get_and_upsert_current_user }
   end
 
   def handle_cast(:sync_user_warehouses, current_user) do

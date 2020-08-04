@@ -5,6 +5,7 @@ defmodule Soukosync.Accounts do
 
   import Ecto.Query, warn: false
   alias Soukosync.Repo
+  alias Soukosync.Helpers
 
   alias Soukosync.Accounts.User
 
@@ -101,4 +102,70 @@ defmodule Soukosync.Accounts do
   def change_user(%User{} = user) do
     User.changeset(user, %{})
   end
+
+  def get_current_user() do
+    api_base_url = Application.get_env(:soukosync, :api_base_url)
+    token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
+    path = "iam/users/me"
+    final = "#{api_base_url}/#{path}"
+
+    headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
+    options = [ssl: [verify: :verify_none]]
+    request = {'https://#{final}', headers}
+
+    data = :httpc.request(:get, request, options, [])
+    |> Helpers.handle_response
+    |> change_id_key_name
+    Helpers.to_struct_from_string_keyed_map(User, data)
+  end
+
+  def upsert_user(user) do
+    Repo.insert!(
+      user,
+      on_conflict: :replace_all_except_primary_key,
+      conflict_target: [:origin_id]
+    )
+  end
+
+  def get_and_upsert_current_user do
+    get_current_user()
+    |> upsert_user()
+  end
+
+  defp change_id_key_name(data) do
+    Map.put(data, "origin_id", data["id"])
+    |> Map.delete("id")
+  end
+
+
+
+  def get_current_user_warehouses() do
+    %User{} = user = get_current_user()
+    get_user_warehouses(user.origin_id)
+  end
+
+  def get_user_warehouses(user_origin_id) do
+    api_base_url = Application.get_env(:soukosync, :api_base_url)
+    token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
+
+    path = "iam/users/#{user_origin_id}/warehouses"
+    final = "#{api_base_url}/#{path}"
+    headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
+    options = [ssl: [verify: :verify_none]]
+    request = {'https://#{final}', headers}
+
+    IO.inspect(final)
+
+    :httpc.request(:get, request, options, [])
+    |> Helpers.handle_response
+    |> Map.get("warehouses")
+  end
+
+
+
+
+
+
+
+
 end

@@ -1,4 +1,4 @@
-defmodule Soukosync.Sync.Warehouse do
+defmodule Soukosync.Warehouses.Warehouse do
   use Ecto.Schema
   import Ecto.Changeset
 
