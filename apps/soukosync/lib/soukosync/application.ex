@@ -7,7 +7,9 @@ defmodule Soukosync.Application do
 
   def start(_type, _args) do
     children = [
-      Soukosync.Repo
+      Soukosync.Repo,
+      {Soukosync.Scheduler, 0},
+      {Soukosync.Caller, 0}
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one, name: Soukosync.Supervisor)
