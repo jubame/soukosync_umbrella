@@ -20,7 +20,7 @@ token_oauth_api =
 config :soukosync,
   ecto_repos: [Soukosync.Repo],
   token_oauth_api: token_oauth_api,
-  api_base_url: "show.pulpo.co/api/v1/"
+  api_base_url: "show.pulpo.co/api/v1"
 
 
 

@@ -106,20 +106,21 @@ defmodule Soukosync.Sync do
   def get_current_user() do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
     token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
-
     path = "iam/users/me"
     final = "#{api_base_url}/#{path}"
+
     headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
     options = [ssl: [verify: :verify_none]]
     request = {'https://#{final}', headers}
 
-    :httpc.request(:get, request, options, [])
+    data = :httpc.request(:get, request, options, [])
     |> handle_response
+    to_struct_from_string_keyed_map(User, data)
   end
 
   def get_current_user_warehouses() do
-    user_id = Map.get(get_current_user(), "id")
-    get_user_warehouses(user_id)
+    %User{} = user = get_current_user()
+    get_user_warehouses(user.id)
   end
 
   def get_user_warehouses(user_id) do
@@ -131,6 +132,8 @@ defmodule Soukosync.Sync do
     headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
     options = [ssl: [verify: :verify_none]]
     request = {'https://#{final}', headers}
+
+    IO.inspect(final)
 
     :httpc.request(:get, request, options, [])
     |> handle_response
@@ -153,6 +156,17 @@ defmodule Soukosync.Sync do
   defp handle_response({status, body}) do
     reason = [status: status, body: body]
     handle_response({:error, reason})
+  end
+
+  # https://stackoverflow.com/a/37734864/12315725
+  def to_struct_from_string_keyed_map(kind, attrs) do
+    struct = struct(kind)
+    Enum.reduce Map.to_list(struct), struct, fn {k, _}, acc ->
+      case Map.fetch(attrs, Atom.to_string(k)) do
+        {:ok, v} -> %{acc | k => v}
+        :error -> acc
+      end
+    end
   end
 
 
