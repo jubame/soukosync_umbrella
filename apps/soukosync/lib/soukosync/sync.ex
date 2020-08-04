@@ -115,19 +115,25 @@ defmodule Soukosync.Sync do
 
     data = :httpc.request(:get, request, options, [])
     |> handle_response
+    |> change_id_key_name
     to_struct_from_string_keyed_map(User, data)
+  end
+
+  defp change_id_key_name(data) do
+    Map.put(data, "origin_id", data["id"])
+    |> Map.delete("id")
   end
 
   def get_current_user_warehouses() do
     %User{} = user = get_current_user()
-    get_user_warehouses(user.id)
+    get_user_warehouses(user.origin_id)
   end
 
-  def get_user_warehouses(user_id) do
+  def get_user_warehouses(user_origin_id) do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
     token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
 
-    path = "iam/users/#{user_id}/warehouses"
+    path = "iam/users/#{user_origin_id}/warehouses"
     final = "#{api_base_url}/#{path}"
     headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
     options = [ssl: [verify: :verify_none]]
