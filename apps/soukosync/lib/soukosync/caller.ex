@@ -14,7 +14,7 @@ defmodule Soukosync.Caller do
   end
 
   def init(_) do
-    { :ok, Sync.get_current_user }
+    { :ok, Sync.get_and_upsert_current_user }
   end
 
   def handle_cast(:sync_user_warehouses, current_user) do

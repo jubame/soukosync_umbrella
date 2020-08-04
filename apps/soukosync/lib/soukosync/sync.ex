@@ -119,6 +119,19 @@ defmodule Soukosync.Sync do
     to_struct_from_string_keyed_map(User, data)
   end
 
+  def upsert_user(user) do
+    Repo.insert!(
+      user,
+      on_conflict: :replace_all_except_primary_key,
+      conflict_target: [:origin_id]
+    )
+  end
+
+  def get_and_upsert_current_user do
+    get_current_user()
+    |> upsert_user()
+  end
+
   defp change_id_key_name(data) do
     Map.put(data, "origin_id", data["id"])
     |> Map.delete("id")
