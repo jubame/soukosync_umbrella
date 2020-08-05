@@ -2,7 +2,7 @@ defmodule Soukosync.Scheduler do
   use GenServer
   alias Soukosync.Caller
 
-  @tick_interval 1_000
+  @tick_interval 1000_000
 
   def start_link(state) do
     GenServer.start_link(__MODULE__, state)
