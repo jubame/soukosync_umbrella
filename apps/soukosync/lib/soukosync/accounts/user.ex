@@ -16,6 +16,7 @@ defmodule Soukosync.Accounts.User do
 
   @doc false
   def changeset(user, attrs) do
+    IO.puts("===================================================================================================")
     user
     |> cast(attrs, [:username, :email, :employee_id, :first_name, :last_name])
     |> validate_required([:username, :email, :employee_id, :first_name, :last_name])

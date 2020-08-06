@@ -23,6 +23,6 @@ defmodule Soukosync.Warehouses.Warehouse do
   def changeset(warehouse, attrs) do
     warehouse
     |> cast(attrs, [:name, :line1, :line2, :site, :city, :state, :zip_code, :country, :fax, :phone])
-    |> validate_required([:name, :line1, :line2, :site, :city, :state, :zip_code, :country, :fax, :phone])
+    |> validate_required([:name, :line1])
   end
 end

@@ -150,7 +150,7 @@ defmodule Soukosync.Accounts do
     user_warehouses = :httpc.request(:get, request, options, [])
     |> Helpers.handle_response
 
-
+    '''
     user_warehouses = change_id_key_name(user_warehouses)
 
     data_warehouses = user_warehouses
@@ -158,7 +158,6 @@ defmodule Soukosync.Accounts do
     |> Enum.map(
       fn data_warehouse ->
         Helpers.to_struct_from_string_keyed_map(Warehouse, change_id_key_name(data_warehouse))
-        |> Repo.preload(:users)
       end
     )
 
@@ -170,11 +169,17 @@ defmodule Soukosync.Accounts do
       data_warehouses
     )
 
+    '''
     IO.inspect(user_warehouses)
+    IO.inspect(User.changeset(%User{}, user_warehouses))
 
-    user = Helpers.to_struct_from_string_keyed_map(User, user_warehouses)
-    IO.inspect(user)
-    Repo.insert(user, on_conflict: :replace_all, conflict_target: :origin_id)
+
+    user_warehouses_changeset = User.changeset(%User{}, user_warehouses)
+    |> Ecto.Changeset.cast_assoc(:warehouses, Map.get(user_warehouses, "warehouses"))
+
+    #user = Helpers.to_struct_from_string_keyed_map(User, user_warehouses)
+    #IO.inspect(user)
+    Repo.insert!(user_warehouses_changeset, on_conflict: :nothing)
 
 
     #Repo.get_by(User, origin_id: user_origin_id)
