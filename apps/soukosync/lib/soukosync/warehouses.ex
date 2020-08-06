@@ -108,7 +108,7 @@ defmodule Soukosync.Warehouses do
   def upsert_warehouse(warehouse) do
     data = Accounts.get_user_warehouses(233)
     '''
-    # Filter to do this...
+    # Filter fields to do this...
     Repo.insert_all(
       Warehouse,
       data
@@ -132,10 +132,6 @@ defmodule Soukosync.Warehouses do
       end
     )
     )
-
-
-
-
 
   end
 
