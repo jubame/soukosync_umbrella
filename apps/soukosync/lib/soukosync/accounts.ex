@@ -128,7 +128,7 @@ defmodule Soukosync.Accounts do
   end
 
   def get_and_upsert_current_user do
-    get_current_user()
+    %{get_current_user() | :warehouses => []}
     |> upsert_user()
   end
 
