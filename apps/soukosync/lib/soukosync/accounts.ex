@@ -170,16 +170,30 @@ defmodule Soukosync.Accounts do
     )
 
     '''
-    IO.inspect(user_warehouses)
-    IO.inspect(User.changeset(%User{}, user_warehouses))
 
 
-    user_warehouses_changeset = User.changeset(%User{}, user_warehouses)
-    |> Ecto.Changeset.cast_assoc(:warehouses, Map.get(user_warehouses, "warehouses"))
+    data_warehouses = user_warehouses
+    |> Map.get("warehouses")
+    |> Enum.map(
+      fn data_warehouse ->
+        #Repo.insert!(Helpers.to_struct_from_string_keyed_map(Warehouse, change_id_key_name(data_warehouse)))
+        Repo.get_by(Warehouse, origin_id: data_warehouse["id"]) || Repo.insert!(Helpers.to_struct_from_string_keyed_map(Warehouse, change_id_key_name(data_warehouse)))
+      end
+    )
+    IO.puts("****************************************************")
+    IO.inspect(data_warehouses)
 
+    #IO.inspect(user_warehouses)
+    #IO.inspect(User.changeset(%User{}, user_warehouses))
+
+
+    #user_warehouses_changeset = User.changeset(%User{}, user_warehouses)
+    #|> Ecto.Changeset.cast_assoc(:warehouses, data_warehouses)
+
+    #IO.inspect(user_warehouses_changeset)
     #user = Helpers.to_struct_from_string_keyed_map(User, user_warehouses)
     #IO.inspect(user)
-    Repo.insert!(user_warehouses_changeset, on_conflict: :nothing)
+    #Repo.insert!(user_warehouses_changeset, on_conflict: :nothing)
 
 
     #Repo.get_by(User, origin_id: user_origin_id)
