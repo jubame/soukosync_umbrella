@@ -8,6 +8,7 @@ defmodule Soukosync.Accounts do
   alias Soukosync.Helpers
 
   alias Soukosync.Accounts.User
+  alias Soukosync.Warehouses.Warehouse
 
   @doc """
   Returns the list of users.
@@ -141,14 +142,14 @@ defmodule Soukosync.Accounts do
 
   def get_current_user_warehouses() do
     %User{} = user = get_current_user()
-    get_user_warehouses(user.origin_id)
+    get_user_warehouses(user)
   end
 
-  def get_user_warehouses(user_origin_id) do
+  def get_user_warehouses(user) do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
     token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
 
-    path = "iam/users/#{user_origin_id}/warehouses"
+    path = "iam/users/#{user.origin_id}/warehouses"
     final = "#{api_base_url}/#{path}"
     headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
     options = [ssl: [verify: :verify_none]]
@@ -156,9 +157,25 @@ defmodule Soukosync.Accounts do
 
     IO.inspect(final)
 
-    :httpc.request(:get, request, options, [])
+    data_warehouses = :httpc.request(:get, request, options, [])
     |> Helpers.handle_response
     |> Map.get("warehouses")
+
+    data_warehouses_mod = Enum.map(
+      data_warehouses,
+      fn data_warehouse ->
+        change_id_key_name(data_warehouse)
+      end
+    )
+    Enum.map(
+      data_warehouses_mod,
+      fn data_warehouse_mod ->
+        %{ Helpers.to_struct_from_string_keyed_map(Warehouse, data_warehouse_mod) | users: [user] }
+      end
+    )
+
+
+
   end
 
 
