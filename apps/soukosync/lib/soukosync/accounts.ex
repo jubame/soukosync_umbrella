@@ -161,22 +161,94 @@ defmodule Soukosync.Accounts do
     |> Helpers.handle_response
     |> Map.get("warehouses")
 
-    data_warehouses_mod = Enum.map(
+    user_warehouses_origin_ids = Enum.map(
+      data_warehouses,
+      fn data_warehouse -> data_warehouse["id"] end
+    )
+
+    warehouses_already_db =  from(warehouse in Warehouse, where: warehouse.id in ^user_warehouses_origin_ids) |> Repo.all
+    warehouses_already_db_ids = Enum.map(
+      warehouses_already_db,
+      fn warehouse ->
+        warehouse.origin_id
+      end
+    )
+    warehouses_not_db_ids = Enum.filter(
+      user_warehouses_origin_ids,
+      fn el -> !Enum.member?(warehouses_already_db_ids, el) end
+    )
+    IO.inspect(warehouses_not_db_ids)
+
+    data_warehouses_not_db = Enum.filter(
       data_warehouses,
       fn data_warehouse ->
-        change_id_key_name(data_warehouse)
+        IO.inspect(data_warehouse["id"])
+        Enum.member?(warehouses_not_db_ids, data_warehouse["id"])
       end
     )
+    IO.puts("=========================================================== data_warehouses_not_db")
+
+
+
+    data_warehouses_not_db = Enum.map(
+      data_warehouses_not_db,
+      fn data_warehouse_not_db ->
+        change_id_key_name(data_warehouse_not_db)
+      end
+    )
+
+    IO.inspect(data_warehouses_not_db)
+
+
+    IO.puts("=========================================================== data_warehouses_not_db_struct")
+
+    IO.inspect(
     Enum.map(
-      data_warehouses_mod,
-      fn data_warehouse_mod ->
-        %{ Helpers.to_struct_from_string_keyed_map(Warehouse, data_warehouse_mod) | users: [user] }
+      data_warehouses_not_db,
+      fn data_warehouse_not_db ->
+
+        %{
+          Helpers.to_struct_from_string_keyed_map(
+            Warehouse,
+            data_warehouse_not_db
+          )
+          | users: [user] }
       end
     )
+    )
+
+
+
+    Enum.map(
+      warehouses_already_db,
+      fn warehouse ->
+        Map.replace!(warehouse, :users, [user | warehouse.users])
+      end
+    )
+
+
+
+
+
+    # data_warehouses_mod = Enum.map(
+    #   data_warehouses,
+    #   fn data_warehouse ->
+    #     change_id_key_name(data_warehouse)
+    #   end
+    # )
+    # Enum.map(
+    #   data_warehouses_mod,
+    #   fn data_warehouse_mod ->
+    #     %{ Helpers.to_struct_from_string_keyed_map(Warehouse, data_warehouse_mod) | users: [user] }
+    #   end
+    # )
+
 
 
 
   end
+
+
 
 
 
