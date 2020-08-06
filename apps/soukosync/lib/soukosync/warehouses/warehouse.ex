@@ -13,6 +13,7 @@ defmodule Soukosync.Warehouses.Warehouse do
     field :site, :string
     field :state, :string
     field :zip_code, :string
+    many_to_many :users, Soukosync.Accounts.User, join_through: "users_warehouses"
 
     timestamps()
   end

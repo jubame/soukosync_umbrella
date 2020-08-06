@@ -9,6 +9,7 @@ defmodule Soukosync.Accounts.User do
     field :last_name, :string
     field :username, :string
     field :origin_id, :integer
+    many_to_many :warehouses, Soukosync.Warehouses.Warehouse, join_through: "users_warehouses"
 
     timestamps()
   end
