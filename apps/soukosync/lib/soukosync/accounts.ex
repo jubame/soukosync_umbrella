@@ -150,8 +150,10 @@ defmodule Soukosync.Accounts do
     user_warehouses = :httpc.request(:get, request, options, [])
     |> Helpers.handle_response
 
-    '''
     user_warehouses = change_id_key_name(user_warehouses)
+    IO.inspect(user_warehouses)
+
+    '''
 
     data_warehouses = user_warehouses
     |> Map.get("warehouses")
@@ -181,19 +183,46 @@ defmodule Soukosync.Accounts do
       end
     )
     IO.puts("****************************************************")
-    IO.inspect(data_warehouses)
+    #IO.inspect(data_warehouses)
 
     #IO.inspect(user_warehouses)
     #IO.inspect(User.changeset(%User{}, user_warehouses))
 
+    user_warehouses = Map.delete(user_warehouses, "warehouses")
 
-    #user_warehouses_changeset = User.changeset(%User{}, user_warehouses)
-    #|> Ecto.Changeset.cast_assoc(:warehouses, data_warehouses)
+    IO.inspect(user_warehouses)
 
-    #IO.inspect(user_warehouses_changeset)
+
+    #Repo.get_by(User, origin_id: user_warehouses["origin_id"])
+
+    IO.inspect(data_warehouses)
+
+    user_warehouses_changeset = User.changeset(%User{}, user_warehouses)
+    #|> Ecto.Changeset.put_assoc(:warehouses, data_warehouses)
+
+
+    case Repo.get_by(User, origin_id: user_origin_id) do
+      nil ->
+        IO.puts("***************************************************NIL")
+        User.changeset(%User{}, user_warehouses)
+        |> Repo.insert!
+      user ->
+        IO.puts("***************************************************NOT NIL")
+        user
+        |> Repo.preload(:warehouses)
+        |> Ecto.Changeset.change()
+        |> Ecto.Changeset.put_assoc(:warehouses, data_warehouses)
+        |> Repo.insert!(on_conflict: :nothing)
+    end
+
+
+
+    IO.inspect(user_warehouses_changeset)
     #user = Helpers.to_struct_from_string_keyed_map(User, user_warehouses)
     #IO.inspect(user)
-    #Repo.insert!(user_warehouses_changeset, on_conflict: :nothing)
+    #Repo.insert!(
+    #  user_warehouses_changeset, on_conflict: :nothing
+    #)
 
 
     #Repo.get_by(User, origin_id: user_origin_id)
