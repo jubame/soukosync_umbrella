@@ -15,9 +15,9 @@ defmodule Soukosync.Caller do
 
   def init(_) do
     if Mix.env == :test do
-      { :ok, Accounts.get_current_user }
+      { :ok, 0 }
     else
-      { :ok, Accounts.get_and_upsert_current_user }
+      { :ok, 0 }
     end
   end
 

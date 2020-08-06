@@ -104,7 +104,7 @@ defmodule Soukosync.Accounts do
     User.changeset(user, %{})
   end
 
-  def get_current_user() do
+  def get_current_user_id() do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
     token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
     path = "iam/users/me"
@@ -116,9 +116,12 @@ defmodule Soukosync.Accounts do
 
     data = :httpc.request(:get, request, options, [])
     |> Helpers.handle_response
-    |> change_id_key_name
-    Helpers.to_struct_from_string_keyed_map(User, data)
+
+    data["id"]
+
   end
+
+
 
   def upsert_user(user) do
     Repo.insert!(
@@ -128,28 +131,14 @@ defmodule Soukosync.Accounts do
     )
   end
 
-  def get_and_upsert_current_user do
-    %{get_current_user() | :warehouses => []}
-    |> upsert_user()
-  end
 
-  defp change_id_key_name(data) do
-    Map.put(data, "origin_id", data["id"])
-    |> Map.delete("id")
-  end
-
-
-
-  def get_current_user_warehouses() do
-    %User{} = user = get_current_user()
-    get_user_warehouses(user)
-  end
-
-  def get_user_warehouses(user) do
+  def get_user_warehouses() do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
     token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
 
-    path = "iam/users/#{user.origin_id}/warehouses"
+    user_origin_id = get_current_user_id
+
+    path = "iam/users/#{user_origin_id}/warehouses"
     final = "#{api_base_url}/#{path}"
     headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
     options = [ssl: [verify: :verify_none]]
@@ -157,89 +146,42 @@ defmodule Soukosync.Accounts do
 
     IO.inspect(final)
 
-    data_warehouses = :httpc.request(:get, request, options, [])
+
+    user_warehouses = :httpc.request(:get, request, options, [])
     |> Helpers.handle_response
+
+
+    user_warehouses = change_id_key_name(user_warehouses)
+
+    data_warehouses = user_warehouses
     |> Map.get("warehouses")
     |> Enum.map(
       fn data_warehouse ->
-        change_id_key_name(data_warehouse)
+        Helpers.to_struct_from_string_keyed_map(Warehouse, change_id_key_name(data_warehouse))
+        |> Repo.preload(:users)
       end
     )
 
-    user_warehouses_origin_ids = Enum.map(
-      data_warehouses,
-      fn data_warehouse -> data_warehouse["origin_id"] end
+    #IO.inspect(data_warehouses)
+
+    user_warehouses = Map.put(
+      user_warehouses,
+      "warehouses",
+      data_warehouses
     )
 
-    warehouses_already_db =  from(warehouse in Warehouse, where: warehouse.id in ^user_warehouses_origin_ids) |> Repo.all
-    warehouses_already_db_ids = Enum.map(
-      warehouses_already_db,
-      fn warehouse ->
-        warehouse.origin_id
-      end
-    )
-    warehouses_not_db_ids = Enum.filter(
-      user_warehouses_origin_ids,
-      fn el -> !Enum.member?(warehouses_already_db_ids, el) end
-    )
-    IO.inspect(warehouses_not_db_ids)
+    IO.inspect(user_warehouses)
 
-    data_warehouses_not_db = Enum.filter(
-      data_warehouses,
-      fn data_warehouse ->
-        IO.inspect(data_warehouse["origin_id"])
-        Enum.member?(warehouses_not_db_ids, data_warehouse["origin_id"])
-      end
-    )
-    IO.puts("=========================================================== data_warehouses_not_db")
+    user = Helpers.to_struct_from_string_keyed_map(User, user_warehouses)
+    IO.inspect(user)
+    Repo.insert(user, on_conflict: :replace_all, conflict_target: :origin_id)
+
+
+    #Repo.get_by(User, origin_id: user_origin_id)
+    #|> Repo.preload(:warehouses)
 
 
 
-    IO.inspect(data_warehouses_not_db)
-
-
-    IO.puts("=========================================================== data_warehouses_not_db_struct")
-
-    IO.inspect(
-    Enum.map(
-      data_warehouses_not_db,
-      fn data_warehouse_not_db ->
-
-        %{
-          Helpers.to_struct_from_string_keyed_map(
-            Warehouse,
-            data_warehouse_not_db
-          )
-          | users: [user] }
-      end
-    )
-    )
-
-
-
-    Enum.map(
-      warehouses_already_db,
-      fn warehouse ->
-        Map.replace!(warehouse, :users, [user | warehouse.users])
-      end
-    )
-
-
-
-
-
-    # data_warehouses_mod = Enum.map(
-    #   data_warehouses,
-    #   fn data_warehouse ->
-    #     change_id_key_name(data_warehouse)
-    #   end
-    # )
-    # Enum.map(
-    #   data_warehouses_mod,
-    #   fn data_warehouse_mod ->
-    #     %{ Helpers.to_struct_from_string_keyed_map(Warehouse, data_warehouse_mod) | users: [user] }
-    #   end
-    # )
 
 
 
@@ -248,6 +190,12 @@ defmodule Soukosync.Accounts do
 
 
 
+
+
+  defp change_id_key_name(data) do
+    Map.put(data, "origin_id", data["id"])
+    |> Map.delete("id")
+  end
 
 
 
