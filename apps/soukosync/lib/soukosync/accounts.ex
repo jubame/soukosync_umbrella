@@ -146,129 +146,36 @@ defmodule Soukosync.Accounts do
 
     IO.inspect(final)
 
-
-    user_warehouses = :httpc.request(:get, request, options, [])
+    data_user_warehouses = :httpc.request(:get, request, options, [])
     |> Helpers.handle_response
 
-    #user_warehouses = change_id_key_name(user_warehouses)
-    IO.inspect(user_warehouses)
+    data_user = Map.delete(data_user_warehouses, "warehouses")
+    data_warehouses = Map.get(data_user_warehouses, "warehouses")
 
-    '''
-
-    data_warehouses = user_warehouses
-    |> Map.get("warehouses")
-    |> Enum.map(
-      fn data_warehouse ->
-        Helpers.to_struct_from_string_keyed_map(Warehouse, change_id_key_name(data_warehouse))
-      end
-    )
-
-    #IO.inspect(data_warehouses)
-
-    user_warehouses = Map.put(
-      user_warehouses,
-      "warehouses",
-      data_warehouses
-    )
-
-    '''
-
-
-    data_warehouses = user_warehouses
-    |> Map.get("warehouses")
-
-    data_warehouses_struct = Enum.map(
+    warehouses_struct = Enum.map(
       data_warehouses,
       fn data_warehouse ->
         Helpers.to_struct_from_string_keyed_map(Warehouse, data_warehouse)
       end
     )
 
-    plain_user = user_warehouses
-    |> Map.delete("warehouses")
-    user_struct = Helpers.to_struct_from_string_keyed_map(User, plain_user)
-
-    final_user_struct = user_struct
-    |> Map.put(:warehouses, data_warehouses_struct)
-
-
-    IO.puts("****************************************************")
-    IO.inspect(final_user_struct)
-    #IO.inspect(data_warehouses)
-
-    #IO.inspect(user_warehouses)
-    #IO.inspect(User.changeset(%User{}, user_warehouses))
-
-    #user_warehouses = Map.delete(user_warehouses, "warehouses")
-
-    #IO.inspect(user_warehouses)
-
-
-    #Repo.get_by(User, origin_id: user_warehouses["origin_id"])
-
-    #IO.inspect(data_warehouses)
-
-    #user_warehouses_changeset = User.changeset(%User{}, user_warehouses)
-    #|> Ecto.Changeset.put_assoc(:warehouses, data_warehouses)
-
+    user_warehouses_struct = Helpers.to_struct_from_string_keyed_map(User, data_user)
+    |> Map.put(:warehouses, warehouses_struct)
 
     case Repo.get_by(User, id: user_id) do
       nil ->
-        IO.puts("***************************************************NIL")
-        User.changeset(%User{}, user_warehouses)
+        IO.inspect(user_warehouses_struct)
+
+        user_warehouses_struct
         |> Repo.insert!
       user ->
-
-        IO.puts("***************************************************NOT NIL")
-        #IO.inspect(User.changeset(user, user_warehouses) )
-        #IO.inspect(user  |> Repo.preload(:warehouses) |> Ecto.Changeset.cast(user_warehouses, []))
-        #p = user
-        #|> Repo.preload(:warehouses)
-        #|> Ecto.Changeset.cast(user_warehouses, [])
-        #|> Ecto.Changeset.cast_assoc(:warehouses, required: true, with: &Warehouse.changeset/2 )
-        #IO.inspect(p)
-        #p
-        #changeset = user
-        #|> User.changeset(user_warehouses)
-        #IO.inspect(changeset)
-        #changeset = { changeset | repo_opts: [on_conflict: :ignore] }
-        #changeset
-        #|> Map.put(:repo_opts, [on_conflict: :nothing])
-
-
-        User.changeset(user, plain_user)
+        User.changeset(user, data_user)
         |> Ecto.Changeset.put_assoc(
           :warehouses,
-          final_user_struct.warehouses
+          warehouses_struct
         )
         |> Repo.update!(on_conflict: :nothing)
-
-
-
-        #|> Repo.insert(on_conflict: :nothing)
-        #|> case do
-        #  {:ok, user} -> user
-        #  {:error, _} -> IO.puts "nothing"
-
     end
-
-
-
-    #IO.inspect(user_warehouses_changeset)
-    #user = Helpers.to_struct_from_string_keyed_map(User, user_warehouses)
-    #IO.inspect(user)
-    #Repo.insert!(
-    #  user_warehouses_changeset, on_conflict: :nothing
-    #)
-
-
-    #Repo.get_by(User, origin_id: user_origin_id)
-    #|> Repo.preload(:warehouses)
-
-
-
-
-
 
 
   end
