@@ -22,6 +22,9 @@ defmodule Soukosync.Warehouses.Warehouse do
 
   @doc false
   def changeset(warehouse, attrs) do
+    #IO.puts("DENTRO DE WAREHOUSE CHANGESET")
+    #IO.inspect(warehouse)
+
     warehouse
     |> cast(attrs, [:id, :name, :line1, :line2, :site, :city, :state, :zip_code, :country, :fax, :phone])
     |> validate_required([:id, :name, :line1])

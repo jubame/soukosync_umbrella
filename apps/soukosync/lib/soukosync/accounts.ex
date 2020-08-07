@@ -182,16 +182,16 @@ defmodule Soukosync.Accounts do
     #IO.inspect(user_warehouses)
     #IO.inspect(User.changeset(%User{}, user_warehouses))
 
-    user_warehouses = Map.delete(user_warehouses, "warehouses")
+    #user_warehouses = Map.delete(user_warehouses, "warehouses")
 
-    IO.inspect(user_warehouses)
+    #IO.inspect(user_warehouses)
 
 
     #Repo.get_by(User, origin_id: user_warehouses["origin_id"])
 
-    IO.inspect(data_warehouses)
+    #IO.inspect(data_warehouses)
 
-    user_warehouses_changeset = User.changeset(%User{}, user_warehouses)
+    #user_warehouses_changeset = User.changeset(%User{}, user_warehouses)
     #|> Ecto.Changeset.put_assoc(:warehouses, data_warehouses)
 
 
@@ -203,18 +203,28 @@ defmodule Soukosync.Accounts do
       user ->
 
         IO.puts("***************************************************NOT NIL")
-        p = user
-        |> Repo.preload(:warehouses)
-        |> Ecto.Changeset.cast(user_warehouses, [])
-        |> Ecto.Changeset.cast_assoc(:warehouses, with: &Warehouse.changeset/2 )
-        IO.inspect(p)
-        p
-        |> Repo.insert!(on_conflict: :nothing)
+        #IO.inspect(User.changeset(user, user_warehouses) )
+        #IO.inspect(user  |> Repo.preload(:warehouses) |> Ecto.Changeset.cast(user_warehouses, []))
+        #p = user
+        #|> Repo.preload(:warehouses)
+        #|> Ecto.Changeset.cast(user_warehouses, [])
+        #|> Ecto.Changeset.cast_assoc(:warehouses, required: true, with: &Warehouse.changeset/2 )
+        #IO.inspect(p)
+        #p
+        changeset = user
+        |> User.changeset(user_warehouses)
+        IO.inspect(changeset)
+        changeset
+        |> Repo.insert()
+        |> case do
+          {:ok, user} -> user
+          {:error, _} -> IO.puts "nothing"
+        end
     end
 
 
 
-    IO.inspect(user_warehouses_changeset)
+    #IO.inspect(user_warehouses_changeset)
     #user = Helpers.to_struct_from_string_keyed_map(User, user_warehouses)
     #IO.inspect(user)
     #Repo.insert!(
