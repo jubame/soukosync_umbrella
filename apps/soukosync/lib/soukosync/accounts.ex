@@ -136,9 +136,9 @@ defmodule Soukosync.Accounts do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
     token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
 
-    user_origin_id = get_current_user_id
+    user_id = get_current_user_id
 
-    path = "iam/users/#{user_origin_id}/warehouses"
+    path = "iam/users/#{user_id}/warehouses"
     final = "#{api_base_url}/#{path}"
     headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
     options = [ssl: [verify: :verify_none]]
@@ -150,7 +150,7 @@ defmodule Soukosync.Accounts do
     user_warehouses = :httpc.request(:get, request, options, [])
     |> Helpers.handle_response
 
-    user_warehouses = change_id_key_name(user_warehouses)
+    #user_warehouses = change_id_key_name(user_warehouses)
     IO.inspect(user_warehouses)
 
     '''
@@ -176,12 +176,6 @@ defmodule Soukosync.Accounts do
 
     data_warehouses = user_warehouses
     |> Map.get("warehouses")
-    |> Enum.map(
-      fn data_warehouse ->
-        #Repo.insert!(Helpers.to_struct_from_string_keyed_map(Warehouse, change_id_key_name(data_warehouse)))
-        Repo.get_by(Warehouse, origin_id: data_warehouse["id"]) || Repo.insert!(Helpers.to_struct_from_string_keyed_map(Warehouse, change_id_key_name(data_warehouse)))
-      end
-    )
     IO.puts("****************************************************")
     #IO.inspect(data_warehouses)
 
@@ -201,17 +195,20 @@ defmodule Soukosync.Accounts do
     #|> Ecto.Changeset.put_assoc(:warehouses, data_warehouses)
 
 
-    case Repo.get_by(User, origin_id: user_origin_id) do
+    case Repo.get_by(User, id: user_id) do
       nil ->
         IO.puts("***************************************************NIL")
         User.changeset(%User{}, user_warehouses)
         |> Repo.insert!
       user ->
+
         IO.puts("***************************************************NOT NIL")
-        user
+        p = user
         |> Repo.preload(:warehouses)
-        |> Ecto.Changeset.change()
-        |> Ecto.Changeset.put_assoc(:warehouses, data_warehouses)
+        |> Ecto.Changeset.cast(user_warehouses, [])
+        |> Ecto.Changeset.cast_assoc(:warehouses, with: &Warehouse.changeset/2 )
+        IO.inspect(p)
+        p
         |> Repo.insert!(on_conflict: :nothing)
     end
 
