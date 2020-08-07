@@ -164,8 +164,6 @@ defmodule Soukosync.Accounts do
 
     case Repo.get_by(User, id: user_id) do
       nil ->
-        IO.inspect(user_warehouses_struct)
-
         user_warehouses_struct
         |> Repo.insert!
       user ->
