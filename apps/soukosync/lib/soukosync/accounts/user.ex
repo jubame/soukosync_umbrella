@@ -10,7 +10,7 @@ defmodule Soukosync.Accounts.User do
     field :last_name, :string
     field :username, :string
     field :origin_id, :integer
-    many_to_many :warehouses, Soukosync.Warehouses.Warehouse, join_through: "users_warehouses", on_replace: :mark_as_invalid
+    many_to_many :warehouses, Soukosync.Warehouses.Warehouse, join_through: "users_warehouses", on_replace: :delete
 
     timestamps()
   end
@@ -23,7 +23,6 @@ defmodule Soukosync.Accounts.User do
     |> Soukosync.Repo.preload(:warehouses)
     |> cast(attrs, [:id, :username, :email, :employee_id, :first_name, :last_name])
     |> validate_required([:id, :username, :email, :employee_id, :first_name, :last_name])
-    |> cast_assoc(:warehouses)
     |> unique_constraint(:id, name: :users_pkey)
   end
 end

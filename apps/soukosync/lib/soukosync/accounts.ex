@@ -176,7 +176,24 @@ defmodule Soukosync.Accounts do
 
     data_warehouses = user_warehouses
     |> Map.get("warehouses")
+
+    data_warehouses_struct = Enum.map(
+      data_warehouses,
+      fn data_warehouse ->
+        Helpers.to_struct_from_string_keyed_map(Warehouse, data_warehouse)
+      end
+    )
+
+    plain_user = user_warehouses
+    |> Map.delete("warehouses")
+    user_struct = Helpers.to_struct_from_string_keyed_map(User, plain_user)
+
+    final_user_struct = user_struct
+    |> Map.put(:warehouses, data_warehouses_struct)
+
+
     IO.puts("****************************************************")
+    IO.inspect(final_user_struct)
     #IO.inspect(data_warehouses)
 
     #IO.inspect(user_warehouses)
@@ -211,15 +228,28 @@ defmodule Soukosync.Accounts do
         #|> Ecto.Changeset.cast_assoc(:warehouses, required: true, with: &Warehouse.changeset/2 )
         #IO.inspect(p)
         #p
-        changeset = user
-        |> User.changeset(user_warehouses)
-        IO.inspect(changeset)
-        changeset
-        |> Repo.insert()
-        |> case do
-          {:ok, user} -> user
-          {:error, _} -> IO.puts "nothing"
-        end
+        #changeset = user
+        #|> User.changeset(user_warehouses)
+        #IO.inspect(changeset)
+        #changeset = { changeset | repo_opts: [on_conflict: :ignore] }
+        #changeset
+        #|> Map.put(:repo_opts, [on_conflict: :nothing])
+
+
+        User.changeset(user, plain_user)
+        |> Ecto.Changeset.put_assoc(
+          :warehouses,
+          final_user_struct.warehouses
+        )
+        |> Repo.update!(on_conflict: :nothing)
+
+
+
+        #|> Repo.insert(on_conflict: :nothing)
+        #|> case do
+        #  {:ok, user} -> user
+        #  {:error, _} -> IO.puts "nothing"
+
     end
 
 

@@ -15,7 +15,7 @@ defmodule Soukosync.Warehouses.Warehouse do
     field :state, :string
     field :zip_code, :string
     field :origin_id, :integer
-    many_to_many :users, Soukosync.Accounts.User, join_through: "users_warehouses", on_replace: :mark_as_invalid
+    many_to_many :users, Soukosync.Accounts.User, join_through: "users_warehouses", on_replace: :delete
 
     timestamps()
   end
@@ -24,9 +24,14 @@ defmodule Soukosync.Warehouses.Warehouse do
   def changeset(warehouse, attrs) do
     #IO.puts("DENTRO DE WAREHOUSE CHANGESET")
     #IO.inspect(warehouse)
-
+    '''
+    changeset =
     warehouse
     |> cast(attrs, [:id, :name, :line1, :line2, :site, :city, :state, :zip_code, :country, :fax, :phone])
     |> validate_required([:id, :name, :line1])
+    '''
+    changeset = Ecto.Changeset.change(warehouse)
+    IO.inspect(changeset)
+    changeset
   end
 end
