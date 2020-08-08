@@ -132,7 +132,7 @@ defmodule Soukosync.Accounts do
   end
 
 
-  def get_user_warehouses() do
+  def upsert_user_warehouses() do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
     token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
 
