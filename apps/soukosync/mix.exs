@@ -42,6 +42,8 @@ defmodule Soukosync.MixProject do
       {:ecto_sql, "~> 3.1"},
       {:postgrex, ">= 0.0.0"},
       {:jason, "~> 1.0"},
+      {:poison, "~> 3.1"},
+      {:httpoison, "~> 1.6"},
       {:exvcr, "~> 0.11", only: :test}
     ]
   end

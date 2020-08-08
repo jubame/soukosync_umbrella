@@ -2,6 +2,7 @@ defmodule Soukosync.Accounts do
   @moduledoc """
   The Accounts context.
   """
+  use HTTPoison.Base
 
   import Ecto.Query, warn: false
   alias Soukosync.Repo
@@ -108,17 +109,18 @@ defmodule Soukosync.Accounts do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
     token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
     path = "iam/users/me"
-    final = "#{api_base_url}/#{path}"
+    url = "https://#{api_base_url}/#{path}"
 
-    headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
-    #options = [ssl: [verify: :verify_none]]
-    options = []
-    request = {'https://#{final}', headers}
+    headers = ["Authorization": "Bearer #{token_oauth_api}"]
+    options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 500]
 
-    data = :httpc.request(:get, request, options, [])
-    |> Helpers.handle_response
+    #data = :httpc.request(:get, request, options, [])
+    #|> Helpers.handle_response
 
-    data["id"]
+    HTTPoison.get!(url, headers, [])
+    |> Map.get(:body)
+    |> Poison.decode!
+    |> Map.get("id")
 
   end
 

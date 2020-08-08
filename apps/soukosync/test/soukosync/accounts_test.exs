@@ -1,13 +1,14 @@
 defmodule Soukosync.AccountsTest do
   require Logger
   use Soukosync.DataCase
-  use ExVCR.Mock, adapter: ExVCR.Adapter.Httpc
+  use ExVCR.Mock,
+    adapter: ExVCR.Adapter.Hackney
 
   alias Soukosync.Accounts
 
 
   setup_all do
-    Application.ensure_all_started(:inets)
+    HTTPoison.start
   end
 
 
@@ -30,6 +31,7 @@ defmodule Soukosync.AccountsTest do
 
 
     test "get_current_user_id/0 returns the id from the currently authenticated user" do
+
       '''
       user_id = Accounts.get_current_user_id()
       IO.inspect(user_id)
@@ -37,6 +39,7 @@ defmodule Soukosync.AccountsTest do
       '''
 
       use_cassette "iam_users_me" do
+        ExVCR.Config.filter_request_headers("Authorization")
         user_id = Accounts.get_current_user_id()
         Logger.debug "debugging #{inspect user_id}"
         assert user_id == 233
