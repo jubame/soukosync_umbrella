@@ -4,6 +4,9 @@
 # remember to add this file to your .gitignore.
 use Mix.Config
 
+config :soukosync.
+  token_oauth_api: System.get_env("TOKEN")
+
 database_url =
   System.get_env("DATABASE_URL") ||
     raise """

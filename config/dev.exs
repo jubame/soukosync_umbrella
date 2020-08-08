@@ -1,5 +1,11 @@
 use Mix.Config
 
+# This is imported through dev.secret.exs
+#
+# config :soukosync.
+#   token_oauth_api: "<YOUR_API_TOKEN>"
+
+
 # Configure your database
 config :soukosync, Soukosync.Repo,
   username: "postgres",
@@ -55,3 +61,6 @@ config :phoenix, :plug_init_mode, :runtime
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
 config :phoenix, :stacktrace_depth, 20
+
+
+import_config "dev.secret.exs"
