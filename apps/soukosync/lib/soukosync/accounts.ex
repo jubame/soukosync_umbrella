@@ -114,10 +114,7 @@ defmodule Soukosync.Accounts do
     headers = ["Authorization": "Bearer #{token_oauth_api}"]
     options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 500]
 
-    #data = :httpc.request(:get, request, options, [])
-    #|> Helpers.handle_response
-
-    HTTPoison.get!(url, headers, [])
+    HTTPoison.get!(url, headers, options)
     |> Map.get(:body)
     |> Poison.decode!
     |> Map.get("id")
