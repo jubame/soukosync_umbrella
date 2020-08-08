@@ -159,21 +159,81 @@ defmodule Soukosync.Accounts do
       end
     )
 
-    user_warehouses_struct = Helpers.to_struct_from_string_keyed_map(User, data_user)
+    user_struct = Helpers.to_struct_from_string_keyed_map(User, data_user)
+    user_warehouses_struct = user_struct
     |> Map.put(:warehouses, warehouses_struct)
 
-    case Repo.get_by(User, id: user_id) do
-      nil ->
-        user_warehouses_struct
-        |> Repo.insert!
-      user ->
-        User.changeset(user, data_user)
+    IO.inspect(data_user)
+
+
+    user = Repo.get(User, user_id) || User.changeset(%User{id: user_id}, data_user)
+    |> Repo.insert!(on_conflict: :nothing)
+
+    IO.puts("aqui")
+
+    IO.inspect(
+    Enum.map(
+      warehouses_struct,
+      fn warehouse ->
+        case Repo.get(Warehouse, warehouse.id) do
+          nil ->
+            warehouse = Map.put(warehouse, :users, [user])
+            Repo.insert!(warehouse, on_conflict: :nothing)
+          existing ->
+            existing_preload = existing |> Repo.preload(:users)
+            changeset = Warehouse.changeset(existing_preload, %{})
+            existing_users_ids = Enum.map(
+              existing_preload.users,
+              fn existing_user ->
+                existing_user.id
+              end
+            )
+
+            IO.puts(">>>>>>>>>>>>>>>>>>>>>>existing_users")
+            IO.inspect(existing_users_ids)
+            IO.puts("<<<<<<<<<<<<<<<<<<<<<<existing_users")
+            IO.puts(">>>>>>>>>>>>>>>>>>>>>>user")
+            IO.inspect(user.id)
+            IO.puts(">>>>>>>>>>>>>>>>>>>>>>user")
+
+
+
+            if !Enum.member?(existing_users_ids, user.id) do
+              IO.puts("member")
+              IO.inspect(
+              changeset
+                |> Ecto.Changeset.put_assoc(:users, [user])
+            )
+              Repo.update!(
+                changeset
+                |> Ecto.Changeset.put_assoc(:users, [user])
+              )
+            end
+
+        end
+
+      end
+    )
+    )
+
+
+
+
+
+
+
+
+      '''
+    User.changeset(user, data_user)
         |> Ecto.Changeset.put_assoc(
           :warehouses,
           warehouses_struct
         )
         |> Repo.update!(on_conflict: :nothing)
-    end
+        '''
+
+
+
 
 
   end

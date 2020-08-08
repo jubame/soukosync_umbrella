@@ -24,14 +24,9 @@ defmodule Soukosync.Warehouses.Warehouse do
   def changeset(warehouse, attrs) do
     #IO.puts("DENTRO DE WAREHOUSE CHANGESET")
     #IO.inspect(warehouse)
-    '''
-    changeset =
     warehouse
     |> cast(attrs, [:id, :name, :line1, :line2, :site, :city, :state, :zip_code, :country, :fax, :phone])
     |> validate_required([:id, :name, :line1])
-    '''
-    changeset = Ecto.Changeset.change(warehouse)
-    IO.inspect(changeset)
-    changeset
+
   end
 end
