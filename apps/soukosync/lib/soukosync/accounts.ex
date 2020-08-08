@@ -181,7 +181,7 @@ defmodule Soukosync.Accounts do
             Repo.insert!(warehouse)
           existing ->
             existing_preload = existing |> Repo.preload(:users)
-            changeset = Warehouse.changeset(existing_preload, %{})
+            changeset = Warehouse.changeset(existing_preload, Map.from_struct(warehouse))
             existing_users_ids = Enum.map(
               existing_preload.users,
               fn existing_user ->
@@ -204,11 +204,13 @@ defmodule Soukosync.Accounts do
               changeset
                 |> Ecto.Changeset.put_assoc(:users, [user])
             )
-              Repo.update!(
-                changeset
-                |> Ecto.Changeset.put_assoc(:users, [user])
-              )
+
+                changeset =
+                Ecto.Changeset.put_assoc(changeset, :users, [user])
+
             end
+
+            Repo.update!(changeset)
 
         end
 
