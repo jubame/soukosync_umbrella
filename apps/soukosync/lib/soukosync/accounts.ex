@@ -178,7 +178,7 @@ defmodule Soukosync.Accounts do
         case Repo.get(Warehouse, warehouse.id) do
           nil ->
             warehouse = Map.put(warehouse, :users, [user])
-            Repo.insert!(warehouse, on_conflict: :nothing)
+            Repo.insert!(warehouse)
           existing ->
             existing_preload = existing |> Repo.preload(:users)
             changeset = Warehouse.changeset(existing_preload, %{})
