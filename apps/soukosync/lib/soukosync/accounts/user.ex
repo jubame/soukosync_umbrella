@@ -20,7 +20,7 @@ defmodule Soukosync.Accounts.User do
     #IO.puts("DENTRO DE USER CHANGESET")
     #IO.inspect(attrs)
     user
-    |> Soukosync.Repo.preload(:warehouses)
+    #|> Soukosync.Repo.preload(:warehouses)
     |> cast(attrs, [:id, :username, :email, :employee_id, :first_name, :last_name])
     |> validate_required([:id, :username, :email, :employee_id, :first_name, :last_name])
     |> unique_constraint(:id, name: :users_pkey)

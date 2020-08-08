@@ -111,7 +111,8 @@ defmodule Soukosync.Accounts do
     final = "#{api_base_url}/#{path}"
 
     headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
-    options = [ssl: [verify: :verify_none]]
+    #options = [ssl: [verify: :verify_none]]
+    options = []
     request = {'https://#{final}', headers}
 
     data = :httpc.request(:get, request, options, [])

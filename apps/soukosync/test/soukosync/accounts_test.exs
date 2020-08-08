@@ -1,12 +1,20 @@
 defmodule Soukosync.AccountsTest do
+  require Logger
   use Soukosync.DataCase
+  use ExVCR.Mock, adapter: ExVCR.Adapter.Httpc
 
   alias Soukosync.Accounts
+
+
+  setup_all do
+    Application.ensure_all_started(:inets)
+  end
+
 
   describe "users" do
     alias Soukosync.Accounts.User
 
-    @valid_attrs %{email: "some email", employee_id: "some employee_id", first_name: "some first_name", last_name: "some last_name", username: "some username"}
+    @valid_attrs %{id: 1, email: "some email", employee_id: "some employee_id", first_name: "some first_name", last_name: "some last_name", username: "some username"}
     @update_attrs %{email: "some updated email", employee_id: "some updated employee_id", first_name: "some updated first_name", last_name: "some updated last_name", username: "some updated username"}
     @invalid_attrs %{email: nil, employee_id: nil, first_name: nil, last_name: nil, username: nil}
 
@@ -18,6 +26,26 @@ defmodule Soukosync.AccountsTest do
 
       user
     end
+
+
+
+    test "get_current_user_id/0 returns the id from the currently authenticated user" do
+      '''
+      user_id = Accounts.get_current_user_id()
+      IO.inspect(user_id)
+      assert user_id == 233
+      '''
+
+      use_cassette "iam_users_me" do
+        user_id = Accounts.get_current_user_id()
+        Logger.debug "debugging #{inspect user_id}"
+        assert user_id == 233
+
+      end
+
+    end
+
+
 
     test "list_users/0 returns all users" do
       user = user_fixture()
