@@ -16,15 +16,16 @@ defmodule Soukosync.Sync do
     user_id = Soukosync.Accounts.get_current_user_id()
 
     path = "iam/users/#{user_id}/warehouses"
-    final = "#{api_base_url}/#{path}"
-    headers = [{'authorization', 'Bearer #{token_oauth_api}'}]
-    options = [ssl: [verify: :verify_none]]
-    request = {'https://#{final}', headers}
+    url = "https://#{api_base_url}/#{path}"
 
-    IO.inspect(final)
+    headers = ["Authorization": "Bearer #{token_oauth_api}"]
+    options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 500]
 
-    data_user_warehouses = :httpc.request(:get, request, options, [])
-    |> Helpers.handle_response
+    data_user_warehouses = HTTPoison.get!(url, headers, options)
+    |> Map.get(:body)
+    |> Poison.decode!
+
+
 
     data_user = Map.delete(data_user_warehouses, "warehouses")
     data_warehouses = Map.get(data_user_warehouses, "warehouses")
@@ -48,8 +49,8 @@ defmodule Soukosync.Sync do
 
     IO.puts("aqui")
 
-    IO.inspect(
-    Enum.map(
+
+    upserts = Enum.map(
       warehouses_struct,
       fn warehouse ->
         case Repo.get(Warehouse, warehouse.id) do
@@ -58,7 +59,7 @@ defmodule Soukosync.Sync do
             Repo.insert!(warehouse)
           existing ->
             existing_preload = existing |> Repo.preload(:users)
-            changeset = Warehouse.changeset(existing_preload, Map.from_struct(warehouse))
+            #changeset = Warehouse.changeset(existing_preload, Map.from_struct(warehouse))
             existing_users_ids = Enum.map(
               existing_preload.users,
               fn existing_user ->
@@ -71,49 +72,36 @@ defmodule Soukosync.Sync do
             IO.puts("<<<<<<<<<<<<<<<<<<<<<<existing_users")
             IO.puts(">>>>>>>>>>>>>>>>>>>>>>user")
             IO.inspect(user.id)
-            IO.puts(">>>>>>>>>>>>>>>>>>>>>>user")
+            IO.puts("<<<<<<<<<<<<<<<<<<<<<<user")
 
 
 
-            if !Enum.member?(existing_users_ids, user.id) do
+            IO.inspect(user.id)
+            IO.inspect([user | existing_preload.users])
+            ids = [user | existing_preload.users]
+            changeset = if !Enum.member?(existing_users_ids, user.id) do
               IO.puts("member")
-              IO.inspect(
-              changeset
-                |> Ecto.Changeset.put_assoc(:users, [user])
-            )
 
-                changeset =
-                Ecto.Changeset.put_assoc(changeset, :users, [user])
+                #changeset =
+                #Ecto.Changeset.put_embed(changeset, :users, [user])
+
+              existing_preload
+              |> Ecto.Changeset.change()
+              |> Ecto.Changeset.put_assoc(:users, [ user | existing_preload.users ])
+
 
             end
 
+            IO.puts("=====================================================================================INSERT")
             Repo.update!(changeset)
 
         end
 
       end
     )
-    )
 
 
-
-
-
-
-
-
-      '''
-    User.changeset(user, data_user)
-        |> Ecto.Changeset.put_assoc(
-          :warehouses,
-          warehouses_struct
-        )
-        |> Repo.update!(on_conflict: :nothing)
-        '''
-
-
-
-
+    upserts
 
   end
 

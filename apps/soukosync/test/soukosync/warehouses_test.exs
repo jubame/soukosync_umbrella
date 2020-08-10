@@ -6,7 +6,7 @@ defmodule Soukosync.SyncTest do
   describe "warehouses" do
     alias Soukosync.Warehouses.Warehouse
 
-    @valid_attrs %{city: "some city", country: "some country", fax: "some fax", line1: "some line1", line2: "some line2", name: "some name", phone: "some phone", site: "some site", state: "some state", zip_code: "some zip_code"}
+    @valid_attrs %{id: 456, city: "some city", country: "some country", fax: "some fax", line1: "some line1", line2: "some line2", name: "some name", phone: "some phone", site: "some site", state: "some state", zip_code: "some zip_code"}
     @update_attrs %{city: "some updated city", country: "some updated country", fax: "some updated fax", line1: "some updated line1", line2: "some updated line2", name: "some updated name", phone: "some updated phone", site: "some updated site", state: "some updated state", zip_code: "some updated zip_code"}
     @invalid_attrs %{city: nil, country: nil, fax: nil, line1: nil, line2: nil, name: nil, phone: nil, site: nil, state: nil, zip_code: nil}
 
