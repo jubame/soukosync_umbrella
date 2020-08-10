@@ -21,9 +21,14 @@ defmodule Soukosync.Sync do
     headers = ["Authorization": "Bearer #{token_oauth_api}"]
     options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 500]
 
-    data_user_warehouses = HTTPoison.get!(url, headers, options)
+    decoded = HTTPoison.get!(url, headers, options)
     |> Map.get(:body)
     |> Poison.decode!
+
+    {:ok, data_user_warehouses} = case decoded do
+      %{"errors" => %{"message" => "unauthorized"}} -> {:error, :unauthorized}
+      data -> {:ok, data}
+    end
 
     data_user = Map.delete(data_user_warehouses, "warehouses")
     data_warehouses = Map.get(data_user_warehouses, "warehouses")
