@@ -114,10 +114,16 @@ defmodule Soukosync.Accounts do
     headers = ["Authorization": "Bearer #{token_oauth_api}"]
     options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 500]
 
-    HTTPoison.get!(url, headers, options)
+    decoded = HTTPoison.get!(url, headers, options)
     |> Map.get(:body)
     |> Poison.decode!
-    |> Map.get("id")
+
+    IO.inspect(decoded)
+
+    case decoded do
+      %{"id" => user_id} -> {:ok, user_id}
+      %{"errors" => %{"message" => "unauthorized"}} -> {:error, :unauthorized}
+    end
 
   end
 

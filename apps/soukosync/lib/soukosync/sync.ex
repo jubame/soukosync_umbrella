@@ -13,7 +13,7 @@ defmodule Soukosync.Sync do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
     token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
 
-    user_id = Soukosync.Accounts.get_current_user_id()
+    {:ok, user_id} = Soukosync.Accounts.get_current_user_id()
 
     path = "iam/users/#{user_id}/warehouses"
     url = "https://#{api_base_url}/#{path}"
