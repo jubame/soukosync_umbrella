@@ -42,8 +42,6 @@ defmodule Soukosync.SyncTest do
       use_cassette "iam_users__user_id__warehouses" do
         ExVCR.Config.filter_request_headers("Authorization")
         inserts = Sync.upsert_user_warehouses()
-        #Logger.debug "debugging #{inspect inserts}"
-        #IO.inspect(Repo.all(Warehouse))
         assert length(inserts) == 5
       end
     end
@@ -59,13 +57,9 @@ defmodule Soukosync.SyncTest do
         Repo.delete(warehouse_to_delete)
 
         changed_name = "changed_name_#{DateTime.to_string(DateTime.utc_now)}"
-        changeset =
+
         warehouse_to_update
         |> Warehouse.changeset(%{name: changed_name})
-        IO.puts("***********************************************HOLA")
-        IO.inspect(changeset)
-
-        changeset
         |> Repo.update()
 
         second_upsert = Sync.upsert_user_warehouses()
@@ -97,13 +91,7 @@ defmodule Soukosync.SyncTest do
         ExVCR.Config.filter_request_headers("Authorization")
         inserted_warehouses = Sync.upsert_user_warehouses()
         new_user_warehouses = Repo.all(from x in Warehouse, order_by: [desc: x.id], limit: 2)
-
         another_warehouse = warehouse_fixture(@warehouse_valid_attrs)
-
-
-
-        IO.puts("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-        IO.inspect(new_user_warehouses)
 
         new_user_warehouses_ids = Enum.map(
           new_user_warehouses,
@@ -114,29 +102,15 @@ defmodule Soukosync.SyncTest do
 
         not_to_delete_warehouse_ids = [another_warehouse.id | new_user_warehouses_ids]
 
-        #IO.inspect(inserted_warehouses)
-        #Repo.delete(inserted_warehouses)
-        #IO.inspect(Repo.all(Warehouse))
         from(w in Warehouse, where: w.id not in ^not_to_delete_warehouse_ids) |> Repo.delete_all()
         user = Repo.one(from(u in User))
         Repo.delete(user)
-        #IO.inspect(Repo.all(Warehouse))
 
-
-        #IO.inspect(
         new_user = User.changeset(%User{}, @user_valid_attrs)
         |> put_assoc(:warehouses, new_user_warehouses)
         |> Repo.insert!()
-        #)
-        IO.puts("************************************************")
-        IO.inspect(Repo.all(User) |> Repo.preload(:warehouses))
-        IO.inspect(Repo.all(Warehouse) |> Repo.preload(:users))
-
-        #IO.inspect(Repo.all(User) |> Repo.preload(:warehouses))
-        #IO.inspect(Repo.all(Warehouse) |> Repo.preload(:users))
 
         Sync.upsert_user_warehouses()
-
 
         common_users_ids_warehouses_with_two_users = from(
           w in Warehouse,
@@ -146,17 +120,8 @@ defmodule Soukosync.SyncTest do
           select: u.id
         ) |> Repo.all()
 
-
-
-
-        IO.puts("=====================================================================================HOLA")
-
-
-        #IO.inspect(Repo.all(User) |> Repo.preload(:warehouses))
-
-        #IO.inspect(Repo.all(Warehouse) |> Repo.preload(:users))
         assert Enum.member?(common_users_ids_warehouses_with_two_users, user.id) and
-        Enum.member?(common_users_ids_warehouses_with_two_users, new_user.id)
+               Enum.member?(common_users_ids_warehouses_with_two_users, new_user.id)
 
       end
     end

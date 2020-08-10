@@ -25,8 +25,6 @@ defmodule Soukosync.Sync do
     |> Map.get(:body)
     |> Poison.decode!
 
-
-
     data_user = Map.delete(data_user_warehouses, "warehouses")
     data_warehouses = Map.get(data_user_warehouses, "warehouses")
 
@@ -38,21 +36,18 @@ defmodule Soukosync.Sync do
     )
 
     user_struct = Helpers.to_struct_from_string_keyed_map(User, data_user)
-    user_warehouses_struct = user_struct
+    _user_warehouses_struct = user_struct
     |> Map.put(:warehouses, warehouses_struct)
-
-    IO.inspect(data_user)
-
 
     user = Repo.get(User, user_id) || User.changeset(%User{id: user_id}, data_user)
     |> Repo.insert!(on_conflict: :nothing)
 
-    IO.puts("aqui")
 
 
     upserts = Enum.map(
       warehouses_struct,
       fn warehouse ->
+
         case Repo.get(Warehouse, warehouse.id) do
           nil ->
             warehouse = Map.put(warehouse, :users, [user])
@@ -67,38 +62,16 @@ defmodule Soukosync.Sync do
               end
             )
 
-            IO.puts(">>>>>>>>>>>>>>>>>>>>>>existing_users")
-            IO.inspect(existing_users_ids)
-            IO.puts("<<<<<<<<<<<<<<<<<<<<<<existing_users")
-            IO.puts(">>>>>>>>>>>>>>>>>>>>>>user")
-            IO.inspect(user.id)
-            IO.puts("<<<<<<<<<<<<<<<<<<<<<<user")
-
-
-
-            IO.inspect(user.id)
-            IO.inspect([user | existing_preload.users])
-
-
             changeset = if !Enum.member?(existing_users_ids, user.id) do
-              IO.puts("member")
-
-                #changeset =
-                #Ecto.Changeset.put_embed(changeset, :users, [user])
-
               changeset
               |> Ecto.Changeset.put_assoc(:users, [ user | existing_preload.users ])
             else
               changeset
             end
 
-
-            IO.puts("=====================================================================================INSERT")
-            IO.inspect(changeset)
             Repo.update!(changeset)
 
         end
-
       end
     )
 
