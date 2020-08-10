@@ -17,6 +17,13 @@ defmodule Soukosync.Helpers do
     handle_response({:error, reason})
   end
 
+  def check_unauthorized(json) do
+    case json do
+      %{"errors" => %{"message" => "unauthorized"}} -> {:error, :unauthorized}
+      data -> {:ok, data}
+    end
+  end
+
   # https://stackoverflow.com/a/37734864/12315725
   def to_struct_from_string_keyed_map(kind, attrs) do
     struct = struct(kind)
