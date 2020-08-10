@@ -2,6 +2,7 @@ defmodule Soukosync.Accounts do
   @moduledoc """
   The Accounts context.
   """
+  require Logger
   use HTTPoison.Base
 
   import Ecto.Query, warn: false
@@ -114,9 +115,11 @@ defmodule Soukosync.Accounts do
     headers = ["Authorization": "Bearer #{token_oauth_api}"]
     options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 500]
 
-    with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- HTTPoison.get(url, headers, options),
-         {:ok, %{"id" => user_id}} <- Helpers.check_unauthorized(Poison.decode!(body))
+    Logger.info("Soukosync.Accounts: Querying #{url}")
+    with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- Helpers.check_unauthorized(HTTPoison.get(url, headers, options)),
+         {:ok, %{"id" => user_id}} <- Poison.decode(body)
     do
+      Logger.info("HTTP 200, user_id: #{user_id}")
       {:ok, user_id}
     end
   end

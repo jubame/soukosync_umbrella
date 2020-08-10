@@ -2,7 +2,7 @@ defmodule Soukosync.Sync do
   @moduledoc """
   The Sync context.
   """
-
+  require Logger
   import Ecto.Query, warn: false
   alias Soukosync.Repo
   alias Soukosync.Helpers
@@ -16,8 +16,8 @@ defmodule Soukosync.Sync do
     options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 500]
 
     with {:ok, user_id} <- Soukosync.Accounts.get_current_user_id(),
-         {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- HTTPoison.get(build_user_warehouses_url(user_id), headers, options),
-         {:ok, data_user_warehouses} <- Helpers.check_unauthorized(Poison.decode!(body))
+         {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- Helpers.check_unauthorized(HTTPoison.get(build_user_warehouses_url(user_id), headers, options)),
+         {:ok, data_user_warehouses} <- Poison.decode(body)
     do
       upsert_user_warehouses(user_id, data_user_warehouses)
     end
@@ -28,7 +28,9 @@ defmodule Soukosync.Sync do
   defp build_user_warehouses_url(user_id) do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
     path = "iam/users/#{user_id}/warehouses"
-    "https://#{api_base_url}/#{path}"
+    url = "https://#{api_base_url}/#{path}"
+    Logger.info("Soukosync.Sync: Querying #{url}")
+    url
   end
 
 
@@ -47,8 +49,14 @@ defmodule Soukosync.Sync do
     _user_warehouses_struct = user_struct
     |> Map.put(:warehouses, warehouses_struct)
 
-    user = Repo.get(User, user_id) || User.changeset(%User{id: user_id}, data_user)
-    |> Repo.insert!(on_conflict: :nothing)
+
+    user = Repo.get(User, user_id) |> Repo.preload(:warehouses) || %User{}
+    changeset = User.changeset(user, data_user)
+    Logger.info("Soukosync.Sync: upserting user #{data_user["username"]}")
+    log_changeset(changeset)
+    user = Repo.insert_or_update!(changeset)
+
+
 
 
 
@@ -59,10 +67,14 @@ defmodule Soukosync.Sync do
         case Repo.get(Warehouse, warehouse.id) do
           nil ->
             warehouse = Map.put(warehouse, :users, [user])
+            Logger.info("Soukosync.Sync: new warehouse #{warehouse.name}. Associating additional current user #{user.username} and inserting...")
             Repo.insert!(warehouse)
           existing ->
+            Logger.info("Soukosync.Sync: found existing warehouse #{existing.name}.")
             existing_preload = existing |> Repo.preload(:users)
             changeset = Warehouse.changeset(existing_preload, Map.from_struct(warehouse))
+            log_changeset(changeset)
+
             existing_users_ids = Enum.map(
               existing_preload.users,
               fn existing_user ->
@@ -71,6 +83,7 @@ defmodule Soukosync.Sync do
             )
 
             changeset = if !Enum.member?(existing_users_ids, user.id) do
+              Logger.info("    associating additional current user #{user.username}.")
               changeset
               |> Ecto.Changeset.put_assoc(:users, [ user | existing_preload.users ])
             else
@@ -87,5 +100,12 @@ defmodule Soukosync.Sync do
     upserts
   end
 
+
+  def log_changeset(changeset) do
+    #IO.inspect(changeset.data.__meta__.schema)
+    if changeset.changes != %{} do
+      Logger.info("    changes: #{inspect changeset.changes}")
+    end
+  end
 
 end

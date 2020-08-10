@@ -1,4 +1,5 @@
 defmodule Soukosync.Caller do
+  require Logger
   use GenServer
   alias Soukosync.Accounts
 
@@ -14,6 +15,8 @@ defmodule Soukosync.Caller do
   end
 
   def init(_) do
+
+    Logger.info("Soukosync.Caller: GenServer init()")
     if Mix.env == :test do
       { :ok, 0 }
     else
@@ -22,6 +25,7 @@ defmodule Soukosync.Caller do
   end
 
   def handle_cast(:sync_user_warehouses, current_user) do
+    Logger.info("Soukosync.Caller: calling Soukosync.Sync.upsert_user_warehouses()")
     IO.puts(":sync_user_warehouses #{current_user.email}")
     { :noreply, current_user }
   end

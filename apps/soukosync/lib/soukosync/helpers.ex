@@ -17,10 +17,10 @@ defmodule Soukosync.Helpers do
     handle_response({:error, reason})
   end
 
-  def check_unauthorized(json) do
-    case json do
-      %{"errors" => %{"message" => "unauthorized"}} -> {:error, :unauthorized}
-      data -> {:ok, data}
+  def check_unauthorized(httpoison) do
+    case httpoison do
+      {:ok, %HTTPoison.Response{status_code: 401}} -> {:error, :unauthorized}
+      _ -> httpoison
     end
   end
 
