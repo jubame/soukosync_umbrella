@@ -59,7 +59,7 @@ defmodule Soukosync.Sync do
             Repo.insert!(warehouse)
           existing ->
             existing_preload = existing |> Repo.preload(:users)
-            #changeset = Warehouse.changeset(existing_preload, Map.from_struct(warehouse))
+            changeset = Warehouse.changeset(existing_preload, Map.from_struct(warehouse))
             existing_users_ids = Enum.map(
               existing_preload.users,
               fn existing_user ->
@@ -78,21 +78,23 @@ defmodule Soukosync.Sync do
 
             IO.inspect(user.id)
             IO.inspect([user | existing_preload.users])
-            ids = [user | existing_preload.users]
+
+
             changeset = if !Enum.member?(existing_users_ids, user.id) do
               IO.puts("member")
 
                 #changeset =
                 #Ecto.Changeset.put_embed(changeset, :users, [user])
 
-              existing_preload
-              |> Ecto.Changeset.change()
+              changeset
               |> Ecto.Changeset.put_assoc(:users, [ user | existing_preload.users ])
-
-
+            else
+              changeset
             end
 
+
             IO.puts("=====================================================================================INSERT")
+            IO.inspect(changeset)
             Repo.update!(changeset)
 
         end

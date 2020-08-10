@@ -59,20 +59,25 @@ defmodule Soukosync.SyncTest do
         Repo.delete(warehouse_to_delete)
 
         changed_name = "changed_name_#{DateTime.to_string(DateTime.utc_now)}"
+        changeset =
         warehouse_to_update
         |> Warehouse.changeset(%{name: changed_name})
+        IO.puts("***********************************************HOLA")
+        IO.inspect(changeset)
+
+        changeset
         |> Repo.update()
 
         second_upsert = Sync.upsert_user_warehouses()
 
-        # Has deleted warehouse been reinsered?
+        # Has deleted warehouse been reinserted?
         reinserted_warehouse = Enum.find(
           second_upsert,
           fn upsert ->
             warehouse_to_delete.id == upsert.id
           end
         )
-        # Has changed name been changed again to its original value?
+        # Has changed name been changed back to its original value?
         reupdated_warehouse = Enum.find(
           second_upsert,
           fn upsert ->
