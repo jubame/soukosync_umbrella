@@ -6,8 +6,8 @@ defmodule SoukosyncWeb.SyncController do
 
   action_fallback SoukosyncWeb.FallbackController
 
-  def sync_last(conn, _params) do
-    last_syncs = Soukosync.Caller.last_syncs()
+  def sync_last(conn, %{"count" => count}) do
+    last_syncs = Soukosync.Caller.last_syncs(String.to_integer(count))
     render(conn, "index.json", %{last_syncs: last_syncs})
   end
 
