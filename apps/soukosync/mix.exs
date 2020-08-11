@@ -44,7 +44,8 @@ defmodule Soukosync.MixProject do
       {:jason, "~> 1.0"},
       {:poison, "~> 3.1"},
       {:httpoison, "~> 1.6"},
-      {:exvcr, "~> 0.11", only: :test}
+      {:exvcr, "~> 0.11", only: :test},
+      {:qex, "~> 0.5"}
     ]
   end
 
