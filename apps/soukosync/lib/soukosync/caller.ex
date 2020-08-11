@@ -11,8 +11,12 @@ defmodule Soukosync.Caller do
     GenServer.start_link(__MODULE__, current_user, name: @me)
   end
 
-  def sync_user_warehouses() do
-    GenServer.cast(@me, :sync_user_warehouses)
+  def sync_call() do
+    GenServer.call(@me, :sync)
+  end
+
+  def sync_cast() do
+    GenServer.cast(@me, :sync)
   end
 
   def init(_) do
@@ -29,7 +33,25 @@ defmodule Soukosync.Caller do
     end
   end
 
-  def handle_cast(:sync_user_warehouses, { current_user, last_syncs } ) do
+  def handle_call(:sync, _from, { current_user, last_syncs } ) do
+    last_syncs = sync_and_push_queue( { current_user, last_syncs } )
+    {:value, last_sync} = last(last_syncs)
+    {
+      :reply,
+      last_sync,
+      { current_user,  last_syncs }
+    }
+  end
+
+  def handle_cast(:sync, { current_user, last_syncs } ) do
+    last_syncs = sync_and_push_queue( { current_user, last_syncs } )
+    {
+      :noreply,
+      { current_user,  last_syncs }
+    }
+  end
+
+  defp sync_and_push_queue({ current_user, last_syncs }) do
     Logger.info("Soukosync.Caller: calling Soukosync.Sync.upsert_user_warehouses()")
     now = DateTime.utc_now()
     to_store = case Soukosync.Sync.upsert_user_warehouses(current_user.id) do
@@ -41,10 +63,7 @@ defmodule Soukosync.Caller do
       to_store
     )
     IO.inspect(last_syncs)
-    {
-      :noreply,
-      { current_user,  last_syncs }
-    }
+    last_syncs
   end
 
   defp push_limit(last_syncs, value) do

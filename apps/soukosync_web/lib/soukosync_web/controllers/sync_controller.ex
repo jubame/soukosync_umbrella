@@ -6,12 +6,26 @@ defmodule SoukosyncWeb.SyncController do
 
   action_fallback SoukosyncWeb.FallbackController
 
-  def sync(conn, _params) do
+  def sync_call(conn, _params) do
     IO.puts("HOLA")
     #users = Accounts.list_users()
     #render(conn, "index.json", users: users)
-    :ok = Soukosync.Caller.sync_user_warehouses()
-    render(conn, "sync.json", %{message: "Soukosync.Caller.sync_user_warehouses called"})
+    last_sync = Soukosync.Caller.sync_call()
+
+    IO.inspect(last_sync)
+    render(
+      conn,
+      "sync.json",
+      %{last_sync: last_sync}
+    )
+  end
+
+  def sync_cast(conn, _params) do
+    IO.puts("HOLA")
+    #users = Accounts.list_users()
+    #render(conn, "index.json", users: users)
+    :ok = Soukosync.Caller.sync_cast()
+    render(conn, "sync.json", %{message: "Soukosync.Caller.cast_sync casted"})
   end
 
 end
