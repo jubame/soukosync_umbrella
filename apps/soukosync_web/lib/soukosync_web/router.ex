@@ -9,5 +9,6 @@ defmodule SoukosyncWeb.Router do
     pipe_through :api
     resources "/users", UserController, except: [:new, :edit]
     resources "/warehouses", WarehouseController, except: [:new, :edit]
+    patch "/sync", SyncController, :sync
   end
 end
