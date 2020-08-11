@@ -55,13 +55,13 @@ defmodule Soukosync.Sync do
     changeset = User.changeset(user, data_user)
     Logger.info("Soukosync.Sync: upserting user #{data_user["username"]}")
     log_changeset(changeset)
-    user = Repo.insert_or_update!(changeset)
+    user_upsert = Repo.insert_or_update(changeset)
 
 
 
 
 
-    upserts = Enum.map(
+    warehouse_upserts = Enum.map(
       warehouses_struct,
       fn warehouse ->
 
@@ -91,14 +91,26 @@ defmodule Soukosync.Sync do
               changeset
             end
 
-            Repo.update!(changeset)
+            Repo.update(changeset)
 
         end
       end
     )
 
+    upserts = [user_upsert | warehouse_upserts]
 
-    upserts
+    final = if Enum.all?(
+      upserts,
+      fn {result, _struct_or_changeset} ->
+        result == :ok
+      end
+    ) do
+      {:ok, upserts}
+    else
+      {:error, upserts}
+    end
+
+    final
   end
 
 
