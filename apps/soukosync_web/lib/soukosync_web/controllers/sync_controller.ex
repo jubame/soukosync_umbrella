@@ -10,7 +10,8 @@ defmodule SoukosyncWeb.SyncController do
     IO.puts("HOLA")
     #users = Accounts.list_users()
     #render(conn, "index.json", users: users)
-    render(conn, "sync.json", %{message: "OK"})
+    :ok = Soukosync.Caller.sync_user_warehouses()
+    render(conn, "sync.json", %{message: "Soukosync.Caller.sync_user_warehouses called"})
   end
 
 end
