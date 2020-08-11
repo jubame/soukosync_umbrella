@@ -11,5 +11,6 @@ defmodule SoukosyncWeb.Router do
     resources "/warehouses", WarehouseController, except: [:new, :edit]
     patch "/syncall", SyncController, :sync_call
     patch "/syncast", SyncController, :sync_cast
+    get "/synlast", SyncController, :sync_last
   end
 end
