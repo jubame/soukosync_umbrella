@@ -106,7 +106,9 @@ defmodule Soukosync.Accounts do
     User.changeset(user, %{})
   end
 
-  def get_current_user_id() do
+
+
+  def get_current_user() do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
     token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
     path = "iam/users/me"
@@ -117,10 +119,12 @@ defmodule Soukosync.Accounts do
 
     Logger.info("Soukosync.Accounts: Querying #{url}")
     with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- Helpers.check_unauthorized(HTTPoison.get(url, headers, options)),
-         {:ok, %{"id" => user_id}} <- Poison.decode(body)
+         {:ok, data_user} <- Poison.decode(body)
     do
-      Logger.info("HTTP 200, user_id: #{user_id}")
-      {:ok, user_id}
+
+      user = Ecto.Changeset.apply_changes(User.changeset(%User{}, data_user))
+      Logger.info("HTTP 200, username: #{user.username}, user id #{user.id}")
+      {:ok, user}
     end
   end
 

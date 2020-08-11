@@ -15,7 +15,7 @@ defmodule Soukosync.Sync do
     headers = ["Authorization": "Bearer #{token_oauth_api}"]
     options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 500]
 
-    with {:ok, user_id} <- Soukosync.Accounts.get_current_user_id(),
+    with {:ok, %User{id: user_id}} <- Soukosync.Accounts.get_current_user(),
          {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- Helpers.check_unauthorized(HTTPoison.get(build_user_warehouses_url(user_id), headers, options)),
          {:ok, data_user_warehouses} <- Poison.decode(body)
     do
