@@ -1,0 +1,13 @@
+version: '3.1'
+
+services:
+    soukosync:
+        build:
+            context: .
+            args:
+                TOKEN: ${TOKEN}
+                DATABASE_URL: ${DATABASE_URL}
+                SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+        ports:
+            - 80:80
+    

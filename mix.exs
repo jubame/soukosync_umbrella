@@ -5,7 +5,13 @@ defmodule Soukosync.Umbrella.MixProject do
     [
       apps_path: "apps",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      releases: [
+        soukosync: [
+          version: "0.0.1",
+          applications: [soukosync: :permanent, soukosync_web: :permanent]
+        ]
+      ]
     ]
   end
 
