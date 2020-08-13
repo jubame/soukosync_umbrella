@@ -7,16 +7,23 @@ use Mix.Config
 config :soukosync,
   token_oauth_api: System.get_env("TOKEN")
 
-database_url =
-  System.get_env("DATABASE_URL") ||
-    raise """
-    environment variable DATABASE_URL is missing.
-    For example: ecto://USER:PASS@HOST/DATABASE
-    """
+# Only works for compile time. Setting url in Soukosync.Repo init()
+# allows reading it from environment variable during runtime. See:
+# https://hexdocs.pm/ecto/Ecto.Repo.html#module-urls
+# > In case the URL needs to be dynamically configured, for example by reading
+# > a system environment variable, such can be done via the init/2 repository
+# > callback
+#
+# database_url =
+#   System.get_env("DATABASE_URL") ||
+#     raise """
+#     environment variable DATABASE_URL is missing.
+#     For example: ecto://USER:PASS@HOST/DATABASE
+#     """
 
 config :soukosync, Soukosync.Repo,
   # ssl: true,
-  url: database_url,
+  # url: database_url,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
 secret_key_base =

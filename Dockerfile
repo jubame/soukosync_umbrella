@@ -16,7 +16,8 @@ ENV MIX_ENV=prod \
     DB_USER=${DB_USER} \
     DB_PASSWORD=${DB_PASSWORD} \
     DATABASE_URL=${DATABASE_URL} \
-    SECRET_KEY_BASE=${SECRET_KEY_BASE}
+    SECRET_KEY_BASE=${SECRET_KEY_BASE} \
+    REPLACE_OS_VARS=true
 
 # Install hex and rebar
 RUN mix local.hex --force && \
@@ -43,7 +44,9 @@ RUN mix release
 # ---------------------------
 FROM alpine:3.12.0 AS app
 
-ENV LANG=C.UTF-8
+# https://www.reddit.com/r/elixir/comments/694u35/issues_with_deploying_to_ec2/dh6yh9f/
+ENV LANG=C.UTF-8 \
+    REPLACE_OS_VARS=true
 
 
 # Install openssl and htop
