@@ -110,7 +110,7 @@ defmodule Soukosync.Accounts do
 
   def get_current_user() do
     api_base_url = Application.get_env(:soukosync, :api_base_url)
-    token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
+    token_oauth_api = System.get_env("TOKEN")
     path = "iam/users/me"
     url = "https://#{api_base_url}/#{path}"
 

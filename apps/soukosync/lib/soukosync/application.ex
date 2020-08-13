@@ -8,6 +8,7 @@ defmodule Soukosync.Application do
   def start(_type, _args) do
     children = [
       Soukosync.Repo,
+      {Soukosync.TokenStore, 0},
       {Soukosync.Scheduler, 0},
       {Soukosync.Caller, 0}
     ]

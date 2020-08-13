@@ -24,10 +24,11 @@ defmodule Soukosync.Caller do
   end
 
   def init(_) do
+
     Logger.info("Soukosync.Caller: GenServer init().")
     {:ok, current_user } = case Soukosync.Accounts.get_current_user() do
       {:ok, current_user } -> {:ok, current_user}
-      {:error, reason} -> raise "Soukosync.Caller: could not start: error requesting current user: #{reason}"
+      {:error, reason} -> IO.puts ("かわいい")#raise "Soukosync.Caller: could not start: error requesting current user: #{reason}"
     end
     Logger.info("Soukosync.Caller: stored user #{current_user.username}, id: #{current_user.id} in GenServer state.")
     if Mix.env == :test do
@@ -38,6 +39,8 @@ defmodule Soukosync.Caller do
         { current_user, Qex.new }
       }
     end
+
+
   end
 
   def handle_call({:last_syncs, count}, _from, { current_user, last_syncs } ) do
