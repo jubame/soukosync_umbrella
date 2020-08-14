@@ -1,4 +1,4 @@
-defmodule Soukosync.SyncTest do
+defmodule Soukosync.WarehousesTest do
   use Soukosync.DataCase
 
   alias Soukosync.Warehouses

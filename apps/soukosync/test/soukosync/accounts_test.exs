@@ -40,7 +40,8 @@ defmodule Soukosync.AccountsTest do
 
       use_cassette "iam_users_me" do
         ExVCR.Config.filter_request_headers("Authorization")
-        assert {:ok, 233} == Accounts.get_current_user_id()
+        {:ok, user} = Accounts.get_current_user()
+        assert user.id == 233
       end
     end
 

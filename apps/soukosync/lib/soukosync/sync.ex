@@ -37,11 +37,16 @@ defmodule Soukosync.Sync do
     |> Map.put(:warehouses, warehouses_struct)
 
 
+    Logger.error "user_id: #{user_id}"
     user = Repo.get(User, user_id) |> Repo.preload(:warehouses) || %User{}
+
     changeset = User.changeset(user, data_user)
     Logger.info("Soukosync.Sync: upserting user #{data_user["username"]}")
     log_changeset(changeset)
-    user_upsert = Repo.insert_or_update(changeset)
+    {_result_upsert_user, user_upsert} = Repo.insert_or_update(changeset)
+
+
+
 
 
 
@@ -53,9 +58,9 @@ defmodule Soukosync.Sync do
 
         case Repo.get(Warehouse, warehouse.id) do
           nil ->
-            warehouse = Map.put(warehouse, :users, [user])
+            warehouse = Map.put(warehouse, :users, [user_upsert])
             Logger.info("Soukosync.Sync: new warehouse #{warehouse.name}. Associating additional current user #{user.username} and inserting...")
-            Repo.insert!(warehouse)
+            Repo.insert(warehouse)
           existing ->
             Logger.info("Soukosync.Sync: found existing warehouse #{existing.name}.")
             existing_preload = existing |> Repo.preload(:users)
@@ -72,7 +77,7 @@ defmodule Soukosync.Sync do
             changeset = if !Enum.member?(existing_users_ids, user.id) do
               Logger.info("    associating additional current user #{user.username}.")
               changeset
-              |> Ecto.Changeset.put_assoc(:users, [ user | existing_preload.users ])
+              |> Ecto.Changeset.put_assoc(:users, [ user_upsert | existing_preload.users ])
             else
               changeset
             end
@@ -83,7 +88,8 @@ defmodule Soukosync.Sync do
       end
     )
 
-    upserts = [user_upsert | warehouse_upserts]
+    upserts = warehouse_upserts # [{result_upsert_user, user_upsert} | warehouse_upserts]
+
 
     final = if Enum.all?(
       upserts,
