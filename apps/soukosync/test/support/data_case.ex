@@ -52,4 +52,27 @@ defmodule Soukosync.DataCase do
       end)
     end)
   end
+
+
+  def same_ids?(warehouses, transaction_changes) do
+    transaction_warehouse_ids = get_warehouse_ids(transaction_changes)
+    warehouse_ids = Enum.map(
+      warehouses,
+      fn warehouse -> warehouse.id end
+    )
+    # https://stackoverflow.com/a/47695540/12315725
+    Enum.sort(warehouse_ids) == Enum.sort(transaction_warehouse_ids)
+  end
+
+  def get_warehouse_ids(transaction_changes) do
+    Enum.reduce(
+      transaction_changes,
+      [],
+      fn
+        {_key, %Soukosync.Warehouses.Warehouse{} = value}, acc -> [ value.id | acc]
+        {_key, _value}, acc -> acc
+      end
+    )
+  end
+
 end

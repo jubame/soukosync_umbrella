@@ -41,9 +41,9 @@ defmodule Soukosync.SyncTest do
     test "upsert_user_warehouses/0 inserts the current user and its warehouses on an empty DB" do
       use_cassette "iam_users__user_id__warehouses" do
         ExVCR.Config.filter_request_headers("Authorization")
-        {result, inserts} = Sync.upsert_user_warehouses()
+        {result, transaction_changes} = Sync.upsert_user_warehouses()
         assert result == :ok and
-               length(inserts) == 5
+               same_ids?(Warehouses.list_warehouses(), transaction_changes)
       end
     end
 
@@ -68,21 +68,25 @@ defmodule Soukosync.SyncTest do
         # Has deleted warehouse been reinserted?
         reinserted_warehouse = Enum.find(
           second_upsert,
-          fn {:ok, upsert} ->
-            warehouse_to_delete.id == upsert.id
+          fn
+            {_key, %Warehouse{} = warehouse} ->
+              warehouse_to_delete.id == warehouse.id
+            {_key, value} -> false
           end
         )
         # Has changed name been changed back to its original value?
         reupdated_warehouse = Enum.find(
           second_upsert,
-          fn {:ok, upsert} ->
-            warehouse_to_update.name == upsert.name
+          fn
+            {_key, %Warehouse{} = warehouse} ->
+              warehouse_to_update.name == warehouse.name
+            {_key, value} -> false
           end
         )
 
         assert reinserted_warehouse != nil
         assert reupdated_warehouse != nil
-        assert length(first_upsert) == 5
+        assert same_ids?(Warehouses.list_warehouses(), first_upsert)
       end
     end
 

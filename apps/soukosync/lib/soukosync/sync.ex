@@ -64,7 +64,7 @@ defmodule Soukosync.Sync do
           nil ->
             Ecto.Multi.run(multi, "warehouse_#{warehouse.id}", Soukosync.Sync, :insert_warehouse, [warehouse])
           existing ->
-            Ecto.Multi.run(multi, "warehouse_#{existing.id}", Soukosync.Sync, :update_warehouse, [existing])
+            Ecto.Multi.run(multi, "warehouse_#{existing.id}", Soukosync.Sync, :update_warehouse, [warehouse, existing])
         end
       end
     )
@@ -95,10 +95,10 @@ defmodule Soukosync.Sync do
     Repo.insert(warehouse)
   end
 
-  def update_warehouse(_repo, %{user: user}, existing) do
+  def update_warehouse(_repo, %{user: user}, warehouse, existing) do
     Logger.info("Soukosync.Sync: found existing warehouse #{existing.name}.")
     existing_preload = existing |> Repo.preload(:users)
-    changeset = Warehouse.changeset(existing_preload, Map.from_struct(existing))
+    changeset = Warehouse.changeset(existing_preload, Map.from_struct(warehouse))
     log_changeset(changeset)
 
     existing_users_ids = Enum.map(
