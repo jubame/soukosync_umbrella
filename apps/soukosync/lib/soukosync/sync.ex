@@ -40,17 +40,15 @@ defmodule Soukosync.Sync do
     Logger.error "user_id: #{user_id}"
     user = Repo.get(User, user_id) |> Repo.preload(:warehouses) || %User{}
 
-    # multi = Ecto.Multi.new()
-
-
     changeset = User.changeset(user, data_user)
     Logger.info("Soukosync.Sync: upserting user #{data_user["username"]}")
     log_changeset(changeset)
 
-    #multi = multi |> Ecto.Multi.insert_or_update(:user, changeset)
-    {_result_upsert_user, user_upsert} = Repo.insert_or_update(changeset)
+    multi = Ecto.Multi.new() |> Ecto.Multi.insert_or_update(:user, changeset)
+    #{_result_upsert_user, user_upsert} = Repo.insert_or_update(changeset)
 
 
+    # Ecto.Multi.run/5 format: https://stackoverflow.com/a/40747098/12315725
 
 
 
@@ -59,39 +57,14 @@ defmodule Soukosync.Sync do
 
     multi = Enum.reduce(
       warehouses_struct,
-      Ecto.Multi.new(),
+      multi,
       fn warehouse, multi ->
 
         case Repo.get(Warehouse, warehouse.id) do
           nil ->
-            warehouse = Map.put(warehouse, :users, [user_upsert])
-            Logger.info("Soukosync.Sync: new warehouse #{warehouse.name}. Associating additional current user #{user.username} and inserting...")
-            Ecto.Multi.insert(multi, warehouse.name, warehouse)
+            Ecto.Multi.run(multi, "warehouse_#{warehouse.id}", Soukosync.Sync, :insert_warehouse, [warehouse])
           existing ->
-            Logger.info("Soukosync.Sync: found existing warehouse #{existing.name}.")
-            existing_preload = existing |> Repo.preload(:users)
-            changeset = Warehouse.changeset(existing_preload, Map.from_struct(warehouse))
-            log_changeset(changeset)
-
-            existing_users_ids = Enum.map(
-              existing_preload.users,
-              fn existing_user ->
-                existing_user.id
-              end
-            )
-
-            changeset = if !Enum.member?(existing_users_ids, user.id) do
-              Logger.info("    associating additional current user #{user.username}.")
-              changeset
-              |> Ecto.Changeset.put_assoc(:users, [ user_upsert | existing_preload.users ])
-            else
-              changeset
-            end
-
-            IO.inspect(multi)
-
-            Ecto.Multi.update(multi, existing.name, changeset)
-
+            Ecto.Multi.run(multi, "warehouse_#{existing.id}", Soukosync.Sync, :update_warehouse, [existing])
         end
       end
     )
@@ -116,6 +89,36 @@ defmodule Soukosync.Sync do
     # final
   end
 
+  def insert_warehouse(_repo, %{user: user}, warehouse) do
+    warehouse = Map.put(warehouse, :users, [user])
+    Logger.info("Soukosync.Sync: new warehouse #{warehouse.name}. Associating additional current user #{user.username} and inserting...")
+    Repo.insert(warehouse)
+  end
+
+  def update_warehouse(_repo, %{user: user}, existing) do
+    Logger.info("Soukosync.Sync: found existing warehouse #{existing.name}.")
+    existing_preload = existing |> Repo.preload(:users)
+    changeset = Warehouse.changeset(existing_preload, Map.from_struct(existing))
+    log_changeset(changeset)
+
+    existing_users_ids = Enum.map(
+      existing_preload.users,
+      fn existing_user ->
+        existing_user.id
+      end
+    )
+
+    changeset = if !Enum.member?(existing_users_ids, user.id) do
+      Logger.info("    associating additional current user #{user.username}.")
+      changeset
+      |> Ecto.Changeset.put_assoc(:users, [ user | existing_preload.users ])
+    else
+      changeset
+    end
+
+    Repo.update(changeset)
+
+  end
 
 
 
