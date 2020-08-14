@@ -15,25 +15,11 @@ defmodule Soukosync.Sync do
   end
 
   def upsert_user_warehouses(user_id) do
-    token_oauth_api = Application.get_env(:soukosync, :token_oauth_api)
-    headers = ["Authorization": "Bearer #{token_oauth_api}"]
-    options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 500]
 
-    with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- Helpers.check_unauthorized(HTTPoison.get(build_user_warehouses_url(user_id), headers, options)),
-         {:ok, data_user_warehouses} <- Poison.decode(body)
-    do
+    with {:ok, data_user_warehouses} <- Soukosync.API.get_user_warehouses(user_id) do
       upsert_user_warehouses(user_id, data_user_warehouses)
     end
   end
-
-  defp build_user_warehouses_url(user_id) do
-    api_base_url = Application.get_env(:soukosync, :api_base_url)
-    path = "iam/users/#{user_id}/warehouses"
-    url = "https://#{api_base_url}/#{path}"
-    Logger.info("Soukosync.Sync: Querying #{url}")
-    url
-  end
-
 
   def upsert_user_warehouses(user_id, data_user_warehouses) do
     data_user = Map.delete(data_user_warehouses, "warehouses")

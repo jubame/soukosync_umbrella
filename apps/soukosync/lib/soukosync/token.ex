@@ -7,6 +7,9 @@ defmodule Soukosync.Token do
     token_type: "bearer"
   ]
 
+  def is_valid(token) when token == nil do
+    false
+  end
   def is_valid(token) do
     token.expires_in == nil ||
     DateTime.diff(token.valid_from, DateTime.utc_now(), :second) > token.expires_in

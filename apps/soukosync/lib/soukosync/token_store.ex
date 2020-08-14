@@ -54,19 +54,21 @@ defmodule Soukosync.TokenStore do
   end
 
   def handle_call(:get_token, _from, token ) do
-    manual_or_auto_token = if Token.is_valid(token) do
-      token
+    {result, token} = if Token.is_valid(token) do
+      {:ok, token}
     else
       fetch_token()
     end
     {
       :reply,
-      manual_or_auto_token,
-      manual_or_auto_token
+      {result, token},
+      token
     }
   end
 
-  def handle_info(:renew, token) do
+
+
+  def handle_info(:renew, _old_token) do
     {:noreply, fetch_token()}
   end
 

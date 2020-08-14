@@ -26,14 +26,7 @@ defmodule Soukosync.Caller do
   def init(_) do
 
     Logger.info("Soukosync.Caller: GenServer init().")
-    current_user = case Soukosync.Accounts.get_current_user() do
-      {:ok, current_user } ->
-        Logger.info("Soukosync.Caller: stored user #{current_user.username}, id: #{current_user.id} in GenServer state.")
-        current_user
-      {:error, reason} ->
-        Logger.error("error Soukosync.Accounts.get_current_user: #{reason}")
-        nil
-    end
+    current_user = get_current_user()
 
     if Mix.env == :test do
       { :ok, current_user }
@@ -43,8 +36,17 @@ defmodule Soukosync.Caller do
         { current_user, Qex.new }
       }
     end
+  end
 
-
+  defp get_current_user() do
+    case Soukosync.Accounts.get_current_user() do
+      {:ok, current_user } ->
+        Logger.info("Soukosync.Caller: stored user #{current_user.username}, id: #{current_user.id} in GenServer state.")
+        current_user
+      {:error, reason} ->
+        Logger.error("error Soukosync.Accounts.get_current_user: #{reason}")
+        nil
+    end
   end
 
   def handle_call({:last_syncs, count}, _from, { current_user, last_syncs } ) do
@@ -73,6 +75,15 @@ defmodule Soukosync.Caller do
     }
   end
 
+  def handle_cast(:check_user, { current_user, last_syncs } ) when current_user == nil do
+    current_user = get_current_user()
+    {
+      :ok,
+      { current_user,  last_syncs }
+    }
+  end
+
+
   def handle_cast(:sync, { current_user, last_syncs } ) do
     last_syncs = sync_and_push_queue( { current_user, last_syncs } )
     {
@@ -82,8 +93,15 @@ defmodule Soukosync.Caller do
   end
 
   defp sync_and_push_queue({ current_user, last_syncs }) when current_user == nil do
-    Logger.warn "Soukosync.Caller: sync_and_push_queue: current_user is nil. Doing nothing."
-    last_syncs
+    Logger.warn "Soukosync.Caller: sync_and_push_queue: current_user is nil. Trying to get it again..."
+    case get_current_user() do
+      nil ->
+        Logger.warn "   Soukosync.Caller: sync_and_push_queue: still nil. Doing nothing."
+        last_syncs
+      fetched_user ->
+        Logger.info "   Soukosync.Caller: sync_and_push_queue: got user #{fetched_user.username}"
+        sync_and_push_queue({ fetched_user, last_syncs })
+    end
   end
 
   defp sync_and_push_queue({ current_user, last_syncs }) do
