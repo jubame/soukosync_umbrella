@@ -26,11 +26,15 @@ defmodule Soukosync.Caller do
   def init(_) do
 
     Logger.info("Soukosync.Caller: GenServer init().")
-    {:ok, current_user } = case Soukosync.Accounts.get_current_user() do
-      {:ok, current_user } -> {:ok, current_user}
-      {:error, reason} -> IO.puts ("かわいい")#raise "Soukosync.Caller: could not start: error requesting current user: #{reason}"
+    current_user = case Soukosync.Accounts.get_current_user() do
+      {:ok, current_user } ->
+        Logger.info("Soukosync.Caller: stored user #{current_user.username}, id: #{current_user.id} in GenServer state.")
+        current_user
+      {:error, reason} ->
+        Logger.error("error Soukosync.Accounts.get_current_user: #{reason}")
+        nil
     end
-    Logger.info("Soukosync.Caller: stored user #{current_user.username}, id: #{current_user.id} in GenServer state.")
+
     if Mix.env == :test do
       { :ok, current_user }
     else
@@ -57,7 +61,11 @@ defmodule Soukosync.Caller do
 
   def handle_call(:sync, _from, { current_user, last_syncs } ) do
     last_syncs = sync_and_push_queue( { current_user, last_syncs } )
-    {:value, last_sync} = last(last_syncs)
+    last_sync = case last(last_syncs) do
+      :empty -> nil
+      {:value, last_sync} -> last_sync
+    end
+
     {
       :reply,
       last_sync,
@@ -71,6 +79,11 @@ defmodule Soukosync.Caller do
       :noreply,
       { current_user,  last_syncs }
     }
+  end
+
+  defp sync_and_push_queue({ current_user, last_syncs }) when current_user == nil do
+    Logger.warn "Soukosync.Caller: sync_and_push_queue: current_user is nil. Doing nothing."
+    last_syncs
   end
 
   defp sync_and_push_queue({ current_user, last_syncs }) do

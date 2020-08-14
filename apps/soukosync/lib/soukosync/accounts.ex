@@ -108,22 +108,11 @@ defmodule Soukosync.Accounts do
 
 
 
+
+
   def get_current_user() do
-    api_base_url = Application.get_env(:soukosync, :api_base_url)
-    token_oauth_api = System.get_env("TOKEN")
-    path = "iam/users/me"
-    url = "https://#{api_base_url}/#{path}"
-
-    headers = ["Authorization": "Bearer #{token_oauth_api}"]
-    options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 500]
-
-    Logger.info("Soukosync.Accounts: Querying #{url}")
-    with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- Helpers.check_unauthorized(HTTPoison.get(url, headers, options)),
-         {:ok, data_user} <- Poison.decode(body)
-    do
-
+    with {:ok, data_user} <- Soukosync.API.get_current_user do
       user = Ecto.Changeset.apply_changes(User.changeset(%User{}, data_user))
-      Logger.info("HTTP 200, username: #{user.username}, user id #{user.id}")
       {:ok, user}
     end
   end
