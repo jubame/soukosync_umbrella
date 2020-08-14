@@ -40,9 +40,14 @@ defmodule Soukosync.Sync do
     Logger.error "user_id: #{user_id}"
     user = Repo.get(User, user_id) |> Repo.preload(:warehouses) || %User{}
 
+    multi = Ecto.Multi.new()
+
+
     changeset = User.changeset(user, data_user)
     Logger.info("Soukosync.Sync: upserting user #{data_user["username"]}")
     log_changeset(changeset)
+
+    #multi = multi |> Ecto.Multi.insert_or_update(:user, changeset)
     {_result_upsert_user, user_upsert} = Repo.insert_or_update(changeset)
 
 
@@ -52,15 +57,16 @@ defmodule Soukosync.Sync do
 
 
 
-    warehouse_upserts = Enum.map(
+    multi = Enum.reduce(
       warehouses_struct,
-      fn warehouse ->
+      Ecto.Multi.new(),
+      fn warehouse, multi ->
 
         case Repo.get(Warehouse, warehouse.id) do
           nil ->
             warehouse = Map.put(warehouse, :users, [user_upsert])
             Logger.info("Soukosync.Sync: new warehouse #{warehouse.name}. Associating additional current user #{user.username} and inserting...")
-            Repo.insert(warehouse)
+            Ecto.Multi.insert(multi, warehouse.name, warehouse)
           existing ->
             Logger.info("Soukosync.Sync: found existing warehouse #{existing.name}.")
             existing_preload = existing |> Repo.preload(:users)
@@ -82,28 +88,35 @@ defmodule Soukosync.Sync do
               changeset
             end
 
-            Repo.update(changeset)
+            IO.inspect(multi)
+
+            Ecto.Multi.update(multi, existing.name, changeset)
 
         end
       end
     )
 
-    upserts = warehouse_upserts # [{result_upsert_user, user_upsert} | warehouse_upserts]
+    multi
+    |> Repo.transaction()
+
+    # upserts = warehouse_upserts # [{result_upsert_user, user_upsert} | warehouse_upserts]
 
 
-    final = if Enum.all?(
-      upserts,
-      fn {result, _struct_or_changeset} ->
-        result == :ok
-      end
-    ) do
-      {:ok, upserts}
-    else
-      {:error, upserts}
-    end
+    # final = if Enum.all?(
+    #   upserts,
+    #   fn {result, _struct_or_changeset} ->
+    #     result == :ok
+    #   end
+    # ) do
+    #   {:ok, upserts}
+    # else
+    #   {:error, upserts}
+    # end
 
-    final
+    # final
   end
+
+
 
 
   def log_changeset(changeset) do
