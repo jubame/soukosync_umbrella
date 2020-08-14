@@ -40,7 +40,7 @@ defmodule Soukosync.Sync do
     Logger.error "user_id: #{user_id}"
     user = Repo.get(User, user_id) |> Repo.preload(:warehouses) || %User{}
 
-    multi = Ecto.Multi.new()
+    # multi = Ecto.Multi.new()
 
 
     changeset = User.changeset(user, data_user)
