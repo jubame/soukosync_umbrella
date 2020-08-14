@@ -17,5 +17,3 @@ config :soukosync_web, SoukosyncWeb.Endpoint,
 config :logger,
   backends: [:console],
   compile_time_purge_level: :debug
-
-import_config "test.secret.exs"

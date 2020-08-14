@@ -4,9 +4,6 @@
 # remember to add this file to your .gitignore.
 use Mix.Config
 
-config :soukosync,
-  token_oauth_api: System.get_env("TOKEN")
-
 # Only works for compile time. Setting url in Soukosync.Repo init()
 # allows reading it from environment variable during runtime. See:
 # https://hexdocs.pm/ecto/Ecto.Repo.html#module-urls
