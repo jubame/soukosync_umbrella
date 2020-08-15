@@ -11,11 +11,6 @@ FROM elixir:1.9.2-alpine AS app_builder
 ENV MIX_ENV=prod \
     TEST=1 \
     LANG=C.UTF-8 \
-    TOKEN=${TOKEN} \
-    DB_HOST=${DB_HOST} \
-    DB_USER=${DB_USER} \
-    DB_PASSWORD=${DB_PASSWORD} \
-    DATABASE_URL=${DATABASE_URL} \
     SECRET_KEY_BASE=${SECRET_KEY_BASE} \
     REPLACE_OS_VARS=true
 

@@ -45,7 +45,7 @@ defmodule Soukosync.Caller do
         Logger.error("error Soukosync.Caller.get_current_user: HTTPoison.Error #{httpoison_error.reason}")
         nil
       {:error, reason} ->
-        Logger.error("error Soukosync.Caller.get_current_user: #{reason}")
+        Logger.error("error Soukosync.Caller.get_current_user: #{inspect(reason)}")
         nil
     end
   end

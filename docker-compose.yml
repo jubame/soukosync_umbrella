@@ -16,6 +16,8 @@ services:
             context: .
         environment:
             TOKEN: ${TOKEN}
+            API_USER: ${API_USER}
+            API_PASSWORD: ${API_PASSWORD}
             DB_HOST: ${DB_HOST}
             DB_USER: ${DB_USER}
             DB_PASSWORD: ${DB_PASSWORD}

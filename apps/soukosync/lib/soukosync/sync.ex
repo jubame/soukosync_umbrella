@@ -37,7 +37,6 @@ defmodule Soukosync.Sync do
     |> Map.put(:warehouses, warehouses_struct)
 
 
-    Logger.error "user_id: #{user_id}"
     user = Repo.get(User, user_id) |> Repo.preload(:warehouses) || %User{}
 
     changeset = User.changeset(user, data_user)
