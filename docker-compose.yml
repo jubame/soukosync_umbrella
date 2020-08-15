@@ -5,10 +5,12 @@ services:
     database:
         image: "postgres:12.1-alpine"
         restart: always
+        ports:
+          - 54320:${DB_PORT}
         environment:
           POSTGRES_USER: ${DB_USER}
           POSTGRES_PASSWORD: ${DB_PASSWORD}
-          POSTGRES_DB: soukosync_prod
+          POSTGRES_DB: ${DB_DB}
 
           
     soukosync:
@@ -23,7 +25,7 @@ services:
             DB_HOST: ${DB_HOST}
             DB_USER: ${DB_USER}
             DB_PASSWORD: ${DB_PASSWORD}
-            DATABASE_URL: "ecto://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/soukosync_prod"
+            DATABASE_URL: "ecto://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DB}"
             SECRET_KEY_BASE: ${SECRET_KEY_BASE}
         ports:
             - 80:80
