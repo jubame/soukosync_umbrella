@@ -5,7 +5,11 @@ defmodule Soukosync.API do
   alias Soukosync.Token
   alias Soukosync.TokenStore
 
+  @spec get_user_token(any, any) ::
+          {:error, HTTPoison.Error.t()}
+          | {:ok, false | nil | true | binary | [any] | number | map}
   def get_user_token(username, password) do
+    Logger.info("Soukosync.API: get_user_token")
 
     body_map = %{
       grant_type: "password",

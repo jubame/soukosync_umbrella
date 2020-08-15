@@ -41,10 +41,13 @@ defmodule Soukosync.Caller do
   defp get_current_user() do
     case Soukosync.Accounts.get_current_user() do
       {:ok, current_user } ->
-        Logger.info("Soukosync.Caller: stored user #{current_user.username}, id: #{current_user.id} in GenServer state.")
+        Logger.info("Soukosync.Caller.get_current_user: stored user #{current_user.username}, id: #{current_user.id} in GenServer state.")
         current_user
+      {:error, httpoison_error = %HTTPoison.Error{}} ->
+        Logger.error("error Soukosync.Caller.get_current_user: HTTPoison.Error #{httpoison_error.reason}")
+        nil
       {:error, reason} ->
-        Logger.error("error Soukosync.Accounts.get_current_user: #{reason}")
+        Logger.error("error Soukosync.Caller.get_current_user: #{reason}")
         nil
     end
   end
