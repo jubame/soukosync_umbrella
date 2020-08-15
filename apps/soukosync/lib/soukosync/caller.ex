@@ -28,18 +28,12 @@ defmodule Soukosync.Caller do
   end
 
   def init(_) do
-
     Logger.info("Soukosync.Caller: GenServer init().")
     current_user = get_current_user()
-
-    if Mix.env == :test do
-      { :ok, current_user }
-    else
-      {
-        :ok,
-        { current_user, Qex.new }
-      }
-    end
+    {
+      :ok,
+      { current_user, Qex.new }
+    }
   end
 
   defp get_current_user() do
@@ -68,20 +62,6 @@ defmodule Soukosync.Caller do
     }
   end
 
-  def handle_call(:sync, _from, { current_user, last_syncs } ) do
-    last_syncs = sync_and_push_queue( { current_user, last_syncs } )
-    last_sync = case last(last_syncs) do
-      :empty -> nil
-      {:value, last_sync} -> last_sync
-    end
-
-    {
-      :reply,
-      last_sync,
-      { current_user,  last_syncs }
-    }
-  end
-
   def handle_cast(:check_user, { current_user, last_syncs } ) when current_user == nil do
     current_user = get_current_user()
     {
@@ -97,6 +77,19 @@ defmodule Soukosync.Caller do
     }
   end
 
+  def handle_call(:sync, _from, { current_user, last_syncs } ) do
+    last_syncs = sync_and_push_queue( { current_user, last_syncs } )
+    last_sync = case last(last_syncs) do
+      :empty -> nil
+      {:value, last_sync} -> last_sync
+    end
+
+    {
+      :reply,
+      last_sync,
+      { current_user,  last_syncs }
+    }
+  end
 
   def handle_cast(:sync, { current_user, last_syncs } ) do
     last_syncs = sync_and_push_queue( { current_user, last_syncs } )
