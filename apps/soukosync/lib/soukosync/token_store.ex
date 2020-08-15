@@ -62,7 +62,7 @@ defmodule Soukosync.TokenStore do
   end
 
   defp init_token do
-    init_token(System.get_env("TOKEN"))
+    init_token(System.get_env("API_TOKEN"))
   end
 
   defp init_token(token_env) when is_nil(token_env) or token_env == "" do
@@ -74,7 +74,7 @@ defmodule Soukosync.TokenStore do
   end
 
   defp init_token(token_env) do
-    Logger.info("Soukosync.TokenStore: storing manual TOKEN env variable #{token_env}")
+    Logger.info("Soukosync.TokenStore: storing manual API_TOKEN env variable #{token_env}")
     %Token{access_token: token_env, expires_in: 0}
   end
 

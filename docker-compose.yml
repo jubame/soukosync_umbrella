@@ -15,7 +15,7 @@ services:
         build:
             context: .
         environment:
-            TOKEN: ${TOKEN}
+            API_TOKEN: ${API_TOKEN}
             API_USER: ${API_USER}
             API_PASSWORD: ${API_PASSWORD}
             DB_HOST: ${DB_HOST}
