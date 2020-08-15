@@ -6,7 +6,11 @@ defmodule Soukosync.Scheduler do
   @default_interval_seconds 60
 
   def get_interval_time do
-    Application.get_env(:soukosync, :scheduler_interval_seconds) || @default_interval_seconds
+    case System.get_env("INTERVAL_SCHEDULER_SECONDS") do
+      nil -> @default_interval_seconds
+      "" -> @default_interval_seconds
+      interval -> String.to_integer(interval)
+    end
   end
 
   def start_link(state) do

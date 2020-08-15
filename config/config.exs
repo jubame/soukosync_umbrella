@@ -13,9 +13,7 @@ use Mix.Config
 # Configure Mix tasks and generators
 config :soukosync,
   ecto_repos: [Soukosync.Repo],
-  api_base_url: "show.pulpo.co/api/v1",
-  token_store_retry_time_seconds: 10,
-  scheduler_interval_seconds: 60
+  api_base_url: "show.pulpo.co/api/v1"
 
 
 

@@ -26,7 +26,11 @@ defmodule Soukosync.TokenStore do
   end
 
   defp get_retry_time do
-    Application.get_env(:soukosync, :token_store_retry_time_seconds) || @default_retry_time_seconds
+    case System.get_env("INTERVAL_RETRY_TOKEN_SECONDS") do
+      nil -> @default_retry_time_seconds
+      "" -> @default_retry_time_seconds
+      interval -> String.to_integer(interval)
+    end
   end
 
   defp schedule_renew(seconds), do: Process.send_after(self(), :renew, seconds * 1000)
@@ -82,7 +86,7 @@ defmodule Soukosync.TokenStore do
 
 
   def init(_) do
-    Logger.info("Soukosync.TokenStore: GenServer init().")
+    Logger.info("Soukosync.TokenStore: GenServer init(). Retry interval #{get_retry_time()} seconds")
     {:ok, init_token()}
   end
 
