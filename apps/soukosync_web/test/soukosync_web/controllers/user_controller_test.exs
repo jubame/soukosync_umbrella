@@ -5,6 +5,7 @@ defmodule SoukosyncWeb.UserControllerTest do
   alias Soukosync.Accounts.User
 
   @create_attrs %{
+    id: 123,
     email: "some email",
     employee_id: "some employee_id",
     first_name: "some first_name",

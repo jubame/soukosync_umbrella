@@ -1,10 +1,11 @@
 defmodule SoukosyncWeb.WarehouseControllerTest do
   use SoukosyncWeb.ConnCase
 
-  alias Soukosync.Sync
-  alias Soukosync.Sync.Warehouse
+  alias Soukosync.Warehouses
+  alias Soukosync.Warehouses.Warehouse
 
   @create_attrs %{
+    id: 123,
     city: "some city",
     country: "some country",
     fax: "some fax",
@@ -31,7 +32,7 @@ defmodule SoukosyncWeb.WarehouseControllerTest do
   @invalid_attrs %{city: nil, country: nil, fax: nil, line1: nil, line2: nil, name: nil, phone: nil, site: nil, state: nil, zip_code: nil}
 
   def fixture(:warehouse) do
-    {:ok, warehouse} = Sync.create_warehouse(@create_attrs)
+    {:ok, warehouse} = Warehouses.create_warehouse(@create_attrs)
     warehouse
   end
 
