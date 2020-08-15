@@ -23,6 +23,10 @@ defmodule Soukosync.Caller do
     GenServer.cast(@me, :sync)
   end
 
+  def check_user() do
+    GenServer.cast(@me, :check_user)
+  end
+
   def init(_) do
 
     Logger.info("Soukosync.Caller: GenServer init().")
@@ -81,7 +85,14 @@ defmodule Soukosync.Caller do
   def handle_cast(:check_user, { current_user, last_syncs } ) when current_user == nil do
     current_user = get_current_user()
     {
-      :ok,
+      :noreply,
+      { current_user,  last_syncs }
+    }
+  end
+
+  def handle_cast(:check_user, { current_user, last_syncs } ) do
+    {
+      :noreply,
       { current_user,  last_syncs }
     }
   end

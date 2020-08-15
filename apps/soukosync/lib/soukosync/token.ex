@@ -11,8 +11,7 @@ defmodule Soukosync.Token do
     false
   end
   def is_valid(token) do
-    token.expires_in == nil ||
-    DateTime.diff(token.valid_from, DateTime.utc_now(), :second) > token.expires_in
+    token.expires_in != nil || DateTime.diff(token.valid_from, DateTime.utc_now(), :second) > token.expires_in
   end
 
 end
