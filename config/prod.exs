@@ -1,5 +1,10 @@
 use Mix.Config
 
+# https://stackoverflow.com/a/35888676/12315725
+config :soukosync,
+  environment: :prod
+
+
 # For production, don't forget to configure the url host
 # to something meaningful, Phoenix uses this information
 # when generating URLs.
@@ -10,8 +15,9 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :soukosync_web, SoukosyncWeb.Endpoint,
-  url: [host: "example.com", port: 80],
-  cache_static_manifest: "priv/static/cache_manifest.json"
+  url: [host: "example.com", port: 80] #,
+  # No static files in this project
+  # cache_static_manifest: "priv/static/cache_manifest.json"
 
 # ## SSL Support
 #

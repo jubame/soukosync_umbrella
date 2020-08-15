@@ -1,5 +1,7 @@
 use Mix.Config
 
+config :soukosync,
+  environment: :dev
 
 # Configure your database
 config :soukosync, Soukosync.Repo,

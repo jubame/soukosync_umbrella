@@ -34,9 +34,21 @@ COPY mix.exs .
 COPY mix.lock .
 
 # Fetch the application dependencies and build the application
-RUN mix deps.get
+RUN mix deps.get --only $MIX_ENV
 RUN mix deps.compile
-RUN mix phx.digest
+
+# No static files in this project
+# Also, cache_static_manifest is commented in prod.exs:
+# config :soukosync_web, SoukosyncWeb.Endpoint,
+#   cache_static_manifest: "priv/static/cache_manifest.json"
+#
+# Build assets
+# COPY assets ./assets
+# RUN cd assets && npm install && npm run deploy
+# RUN mix phx.digest
+
+# Build Release
+COPY rel ./rel
 RUN mix release
 
 # ---------------------------

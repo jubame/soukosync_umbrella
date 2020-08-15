@@ -1,5 +1,8 @@
 use Mix.Config
 
+config :soukosync,
+  environment: :test
+
 # Configure your database
 config :soukosync, Soukosync.Repo,
   username: "postgres",

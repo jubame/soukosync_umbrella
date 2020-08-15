@@ -23,7 +23,7 @@ defmodule Soukosync.Scheduler do
 
   def handle_info(:tick, state) do
     Logger.info("Soukosync.Scheduler -> Caller.sync_cast()")
-    if Mix.env == :test do
+    if Application.get_env(:soukosync, :environment) == :test do
       Logger.warn("Scheduler periodic Caller.sync_cast() execution disabled in test environment to avoid writing to DB while tests are running.")
     else
       Caller.sync_cast()
