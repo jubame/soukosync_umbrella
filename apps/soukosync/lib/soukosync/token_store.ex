@@ -26,10 +26,7 @@ defmodule Soukosync.TokenStore do
   end
 
   defp get_retry_time do
-    case System.get_env("TOKEN_RETRY_TIME") do
-      nil -> @default_retry_time_seconds
-      string_seconds -> String.to_integer(string_seconds)
-    end
+    Application.get_env(:soukosync, :token_store_retry_time_seconds) || @default_retry_time_seconds
   end
 
   defp schedule_renew(seconds), do: Process.send_after(self(), :renew, seconds * 1000)
@@ -53,7 +50,7 @@ defmodule Soukosync.TokenStore do
         #schedule_renew(token.expires_in)
         {:ok, token}
       {:error, httpoison_error = %HTTPoison.Error{}} ->
-        Logger.error("Soukosync.TokenStore: failed to get token: HTTPoison.Error #{httpoison_error.reason}. Retryig in seconds")
+        Logger.error("Soukosync.TokenStore: failed to get token: HTTPoison.Error #{httpoison_error.reason}. Retrying in #{get_retry_time()} seconds")
         schedule_renew(get_retry_time())
         {:error, httpoison_error}
       {:error, data} ->
