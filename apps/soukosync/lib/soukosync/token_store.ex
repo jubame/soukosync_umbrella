@@ -10,6 +10,8 @@ defmodule Soukosync.TokenStore do
 
 
 
+  @not_valid [nil, ""]
+
   @me TokenStore
   @default_retry_time_seconds 10
 
@@ -39,9 +41,9 @@ defmodule Soukosync.TokenStore do
     fetch_token(System.get_env("API_USER"), System.get_env("API_PASSWORD"))
   end
 
-  defp fetch_token(user, password) when is_nil(user) or is_nil(password) do
-    message = "Environment variables API_USER or API_PASSWORD not set. Please exit and restart."
-    Logger.info("Soukosync.TokenStore: #{message}")
+  defp fetch_token(user, password) when user in @not_valid or password in @not_valid do
+    message = "Environment variables API_USER or API_PASSWORD not set. Please exit and set either API_TOKEN or (API_user and API_PASSWORD)."
+    Logger.warn("Soukosync.TokenStore: #{message}")
     {:error, message}
   end
 
@@ -69,7 +71,8 @@ defmodule Soukosync.TokenStore do
     init_token(System.get_env("API_TOKEN"))
   end
 
-  defp init_token(token_env) when is_nil(token_env) or token_env == "" do
+  defp init_token(token_env) when token_env in @not_valid do
+    Logger.warn("Soukosync.TokenStore: API_TOKEN not set")
     case fetch_token() do
       {:ok, token} -> token
       {:error, _reason} ->

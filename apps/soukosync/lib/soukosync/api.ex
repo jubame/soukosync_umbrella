@@ -2,7 +2,6 @@ defmodule Soukosync.API do
   use HTTPoison.Base
   require Logger
   alias Soukosync.Helpers
-  alias Soukosync.Token
   alias Soukosync.TokenStore
 
   @spec get_user_token(any, any) ::
