@@ -124,8 +124,13 @@ defmodule Soukosync.Caller do
     Logger.info("Soukosync.Caller: calling Soukosync.Sync.upsert_user_warehouses()")
     now = DateTime.utc_now()
     to_store = case Soukosync.Sync.upsert_user_warehouses(current_user.id) do
-      {:ok, structs} -> {:ok, now, "全部ＯＫ、#{Enum.count(structs)}つ　入れちゃった！"}
-      {:error, value} -> {:error, now, value}
+
+      {:ok, structs} ->
+        # 全部ＯＫ、全部 入れちゃった！
+        {:ok, now, "#{Enum.count(structs)} upserted"}
+      {:error, value} ->
+        # だめだ
+        {:error, now, value}
     end
     last_syncs = push_limit(
       last_syncs,

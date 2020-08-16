@@ -46,17 +46,144 @@ later by inspecting the successful sync queue at `/api/synlast` (HTTP GET). If
 it is too long, `count` query parameter can be specified to shorten it, e.g.
 `/api/synlast?count=2`
 
-
+Some examples:
 
 ```
-curl -X PATCH http://localhost/api/syncall
-{"data":"全部ＯＫ、6つ　入れちゃった！","date":"2020-08-16T10:25:57.540778Z","response":"ok"}
-
-curl -X PATCH http://localhost/api/syncast
-{"data":"Soukosync.Caller.cast_sync casted","date":"2020-08-16T10:26:56.114447Z","response":"ok"}
-
-curl http://localhost/api/synlast
-{"data":[{"data":"全部ＯＫ、6つ　入れちゃった！","date":"2020-08-16T10:37:45.915006Z","response":"ok"},{"data":"全部ＯＫ、6つ　入れちゃった！","date":"2020-08-16T10:37:51.911118Z","response":"ok"},{"data":"全部ＯＫ、6つ　入れちゃった！","date":"2020-08-16T10:37:58.397904Z","response":"ok"}]}
+ j   develop  …  trabajo  pulpo  soukosync_umbrella  7  1  curl -X PATCH http://localhost/api/syncall | python -m json.tool
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    74  100    74    0     0    174      0 --:--:-- --:--:-- --:--:--   174
+{
+    "data": "6 upserted",
+    "date": "2020-08-16T11:34:23.588901Z",
+    "response": "ok"
+}
+ j   develop  …  trabajo  pulpo  soukosync_umbrella  curl -X PATCH http://localhost/api/syncall | python -m json.tool
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   116  100   116    0     0    219      0 --:--:-- --:--:-- --:--:--   219
+{
+    "data": {
+        "__exception__": true,
+        "id": null,
+        "reason": "timeout"
+    },
+    "date": "2020-08-16T11:34:32.630631Z",
+    "response": "error"
+}
+ j   develop  …  trabajo  pulpo  soukosync_umbrella  curl -X PATCH http://localhost/api/syncast | python -m json.tool
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    97  100    97    0     0   6062      0 --:--:-- --:--:-- --:--:--  6062
+{
+    "data": "Soukosync.Caller.cast_sync casted",
+    "date": "2020-08-16T11:34:37.263700Z",
+    "response": "ok"
+}
+ j   develop  …  trabajo  pulpo  soukosync_umbrella  curl http://localhost/api/synlast | python -m json.tool
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   320  100   320    0     0  20000      0 --:--:-- --:--:-- --:--:-- 20000
+{
+    "data": [
+        {
+            "data": "6 upserted",
+            "date": "2020-08-16T11:34:23.588901Z",
+            "response": "ok"
+        },
+        {
+            "data": {
+                "__exception__": true,
+                "id": null,
+                "reason": "timeout"
+            },
+            "date": "2020-08-16T11:34:32.630631Z",
+            "response": "error"
+        },
+        {
+            "data": {
+                "__exception__": true,
+                "id": null,
+                "reason": "nxdomain"
+            },
+            "date": "2020-08-16T11:34:37.263788Z",
+            "response": "error"
+        }
+    ]
+}
+ j   develop  …  trabajo  pulpo  soukosync_umbrella  curl http://localhost/api/synlast?count=1 | python -m json.tool
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   128  100   128    0     0   5565      0 --:--:-- --:--:-- --:--:--  5565
+{
+    "data": [
+        {
+            "data": {
+                "__exception__": true,
+                "id": null,
+                "reason": "nxdomain"
+            },
+            "date": "2020-08-16T11:34:37.263788Z",
+            "response": "error"
+        }
+    ]
+}
+ j   develop  …  trabajo  pulpo  soukosync_umbrella  curl -X PATCH http://localhost/api/syncall | python -m json.tool
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    74  100    74    0     0    110      0 --:--:-- --:--:-- --:--:--   110
+{
+    "data": "6 upserted",
+    "date": "2020-08-16T11:35:47.295269Z",
+    "response": "ok"
+}
+ j   develop  …  trabajo  pulpo  soukosync_umbrella  
+ j   develop  …  trabajo  pulpo  soukosync_umbrella  
+ j   develop  …  trabajo  pulpo  soukosync_umbrella  curl http://localhost/api/synlast | python -m json.tool
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   513  100   513    0     0  36642      0 --:--:-- --:--:-- --:--:-- 36642
+{
+    "data": [
+        {
+            "data": "6 upserted",
+            "date": "2020-08-16T11:34:23.588901Z",
+            "response": "ok"
+        },
+        {
+            "data": {
+                "__exception__": true,
+                "id": null,
+                "reason": "timeout"
+            },
+            "date": "2020-08-16T11:34:32.630631Z",
+            "response": "error"
+        },
+        {
+            "data": {
+                "__exception__": true,
+                "id": null,
+                "reason": "nxdomain"
+            },
+            "date": "2020-08-16T11:34:37.263788Z",
+            "response": "error"
+        },
+        {
+            "data": {
+                "__exception__": true,
+                "id": null,
+                "reason": "nxdomain"
+            },
+            "date": "2020-08-16T11:35:17.285021Z",
+            "response": "error"
+        },
+        {
+            "data": "6 upserted",
+            "date": "2020-08-16T11:35:47.295269Z",
+            "response": "ok"
+        }
+    ]
+}
 ```
 
 
