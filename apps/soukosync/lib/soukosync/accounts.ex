@@ -7,10 +7,8 @@ defmodule Soukosync.Accounts do
 
   import Ecto.Query, warn: false
   alias Soukosync.Repo
-  alias Soukosync.Helpers
 
   alias Soukosync.Accounts.User
-  alias Soukosync.Warehouses.Warehouse
 
   @doc """
   Returns the list of users.
@@ -106,43 +104,12 @@ defmodule Soukosync.Accounts do
     User.changeset(user, %{})
   end
 
-
-
-
-
   def get_current_user() do
     with {:ok, data_user} <- Soukosync.API.get_current_user do
       user = Ecto.Changeset.apply_changes(User.changeset(%User{}, data_user))
       {:ok, user}
     end
   end
-
-
-
-  def upsert_user(user) do
-    Repo.insert!(
-      user,
-      on_conflict: :replace_all_except_primary_key,
-      conflict_target: [:origin_id]
-    )
-  end
-
-
-
-
-
-
-
-
-  defp change_id_key_name(data) do
-    Map.put(data, "origin_id", data["id"])
-    |> Map.delete("id")
-  end
-
-
-
-
-
 
 
 end

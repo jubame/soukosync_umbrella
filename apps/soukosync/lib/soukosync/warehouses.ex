@@ -5,11 +5,8 @@ defmodule Soukosync.Warehouses do
 
   import Ecto.Query, warn: false
   alias Soukosync.Repo
-  alias Soukosync.Helpers
 
   alias Soukosync.Warehouses.Warehouse
-  alias Soukosync.Accounts
-  alias Soukosync.Accounts.User
 
   @doc """
   Returns the list of warehouses.
@@ -104,42 +101,6 @@ defmodule Soukosync.Warehouses do
   def change_warehouse(%Warehouse{} = warehouse) do
     Warehouse.changeset(warehouse, %{})
   end
-
-  def upsert_warehouse(warehouse) do
-    data = Accounts.get_user_warehouses()
-    '''
-    # Filter fields to do this...
-    Repo.insert_all(
-      Warehouse,
-      data
-    )
-    '''
-
-    IO.inspect(data)
-    struct = Enum.map(
-      data,
-      fn warehouse ->
-        Helpers.to_struct_from_string_keyed_map(Warehouse, warehouse)
-      end
-    )
-
-
-    IO.inspect(
-    Enum.map(
-      struct,
-      fn warehouse ->
-        Repo.insert!(warehouse, on_conflict: :nothing)
-      end
-    )
-    )
-
-  end
-
-
-
-
-
-
 
 
 end

@@ -1,7 +1,6 @@
 defmodule Soukosync.Caller do
   require Logger
   use GenServer
-  alias Soukosync.Accounts
   import Qex
 
 
@@ -71,21 +70,6 @@ defmodule Soukosync.Caller do
     }
   end
 
-  def handle_cast(:check_user, { current_user, last_syncs } ) when current_user == nil do
-    current_user = get_current_user()
-    {
-      :noreply,
-      { current_user,  last_syncs }
-    }
-  end
-
-  def handle_cast(:check_user, { current_user, last_syncs } ) do
-    {
-      :noreply,
-      { current_user,  last_syncs }
-    }
-  end
-
   def handle_call(:sync, _from, { current_user, last_syncs } ) do
     last_syncs = sync_and_push_queue( { current_user, last_syncs } )
     last_sync = case last(last_syncs) do
@@ -102,6 +86,21 @@ defmodule Soukosync.Caller do
 
   def handle_cast(:sync, { current_user, last_syncs } ) do
     last_syncs = sync_and_push_queue( { current_user, last_syncs } )
+    {
+      :noreply,
+      { current_user,  last_syncs }
+    }
+  end
+
+  def handle_cast(:check_user, { current_user, last_syncs } ) when current_user == nil do
+    current_user = get_current_user()
+    {
+      :noreply,
+      { current_user,  last_syncs }
+    }
+  end
+
+  def handle_cast(:check_user, { current_user, last_syncs } ) do
     {
       :noreply,
       { current_user,  last_syncs }

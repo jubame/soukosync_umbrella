@@ -1,9 +1,6 @@
 defmodule SoukosyncWeb.SyncController do
   use SoukosyncWeb, :controller
 
-  alias Soukosync.Accounts
-  alias Soukosync.Accounts.User
-
   action_fallback SoukosyncWeb.FallbackController
 
   def sync_last(conn, %{"count" => count}) do
