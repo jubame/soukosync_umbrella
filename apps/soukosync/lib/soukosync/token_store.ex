@@ -79,7 +79,7 @@ defmodule Soukosync.TokenStore do
 
   defp init_token(token_env) do
     Logger.info("Soukosync.TokenStore: storing manual API_TOKEN env variable #{token_env}")
-    %Token{access_token: token_env, expires_in: 0}
+    %Token{access_token: token_env, expires_in: :never}
   end
 
 
