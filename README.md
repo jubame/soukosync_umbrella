@@ -60,3 +60,8 @@ curl http://localhost/api/synlast
 ```
 
 
+## Automated tests
+```
+cd soukosync_umbrella
+mix test
+```
