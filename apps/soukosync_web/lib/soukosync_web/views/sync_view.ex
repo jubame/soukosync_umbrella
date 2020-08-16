@@ -6,12 +6,34 @@ defmodule SoukosyncWeb.SyncView do
     %{data: render_many(last_syncs, SyncView, "sync.json")}
   end
 
-  def render("sync.json", %{sync: last_sync}) do
-    {response, date, data} = last_sync
+
+  def render("sync.json", %{sync: {:error, message}}) do
+    %{
+      response: :error,
+      data: message
+    }
+  end
+
+  def render("sync.json", %{sync: :empty}) do
+    %{
+      data: "empty"
+    }
+  end
+
+  def render("sync.json", %{sync: {:value, {response, date, data}}}) do
     %{
       response: response,
       date: date,
       data: IO.inspect(data)
     }
   end
+
+  def render("sync.json", %{sync: {response, date, data}}) do
+    %{
+      response: response,
+      date: date,
+      data: IO.inspect(data)
+    }
+  end
+
 end

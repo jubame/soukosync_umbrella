@@ -70,16 +70,27 @@ defmodule Soukosync.Caller do
     }
   end
 
-  def handle_call(:sync, _from, { current_user, last_syncs } ) do
-    last_syncs = sync_and_push_queue( { current_user, last_syncs } )
-    last_sync = case last(last_syncs) do
-      :empty -> nil
-      {:value, last_sync} -> last_sync
-    end
-
+  def handle_call(:sync, _from, { current_user, last_syncs } ) when current_user ==nil do
+    Logger.warn "   Soukosync.Caller: sync_and_push_queue: still nil. Doing nothing."
     {
       :reply,
-      last_sync,
+      {:error, "current user is nil"},
+      { current_user,  last_syncs }
+    }
+  end
+
+  def handle_call(:sync, _from, { current_user, last_syncs } ) do
+    last_syncs = sync_and_push_queue( { current_user, last_syncs } )
+    {
+      :reply,
+      last(last_syncs),
+      { current_user,  last_syncs }
+    }
+  end
+
+  def handle_cast(:sync, { current_user, last_syncs } ) when current_user==nil do
+    {
+      :noreply,
       { current_user,  last_syncs }
     }
   end
@@ -108,15 +119,8 @@ defmodule Soukosync.Caller do
   end
 
   defp sync_and_push_queue({ current_user, last_syncs }) when current_user == nil do
-    Logger.warn "Soukosync.Caller: sync_and_push_queue: current_user is nil. Trying to get it again..."
-    case get_current_user() do
-      nil ->
-        Logger.warn "   Soukosync.Caller: sync_and_push_queue: still nil. Doing nothing."
-        last_syncs
-      fetched_user ->
-        Logger.info "   Soukosync.Caller: sync_and_push_queue: got user #{fetched_user.username}"
-        sync_and_push_queue({ fetched_user, last_syncs })
-    end
+    Logger.warn "Soukosync.Caller: sync_and_push_queue: current_user is nil. Outta here..."
+    last_syncs
   end
 
   defp sync_and_push_queue({ current_user, last_syncs }) do
