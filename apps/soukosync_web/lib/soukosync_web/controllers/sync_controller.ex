@@ -11,6 +11,11 @@ defmodule SoukosyncWeb.SyncController do
     render(conn, "index.json", %{last_syncs: last_syncs})
   end
 
+  def sync_last(conn, _params) do
+    last_syncs = Soukosync.Caller.last_syncs()
+    render(conn, "index.json", %{last_syncs: last_syncs})
+  end
+
   def sync_call(conn, _params) do
     IO.puts("HOLA")
     #users = Accounts.list_users()

@@ -15,6 +15,10 @@ defmodule Soukosync.Caller do
     GenServer.call(@me, {:last_syncs,  count})
   end
 
+  def last_syncs() do
+    GenServer.call(@me, :last_syncs)
+  end
+
   def sync_call() do
     GenServer.call(@me, :sync)
   end
@@ -51,13 +55,18 @@ defmodule Soukosync.Caller do
   end
 
   def handle_call({:last_syncs, count}, _from, { current_user, last_syncs } ) do
-
-    IO.inspect(count)
-
     {_q1, q2} = Qex.split(last_syncs, max(0, Enum.count(last_syncs) - count))
     {
       :reply,
       q2,
+      { current_user,  last_syncs }
+    }
+  end
+
+  def handle_call(:last_syncs, _from, { current_user, last_syncs } ) do
+    {
+      :reply,
+      last_syncs,
       { current_user,  last_syncs }
     }
   end
