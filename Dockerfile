@@ -6,12 +6,13 @@ FROM elixir:1.9.2-alpine AS app_builder
 
 # https://stackoverflow.com/a/34545644/12315725
 
+ARG PORT
+ARG SECRET_KEY_BASE
 
 # Set environment variables for building the application
 ENV MIX_ENV=prod \
     TEST=1 \
     LANG=C.UTF-8 \
-    SECRET_KEY_BASE=${SECRET_KEY_BASE} \
     REPLACE_OS_VARS=true
 
 # Install hex and rebar

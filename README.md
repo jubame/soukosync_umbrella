@@ -1,5 +1,5 @@
-＃ DEV-BackendTask-180520-1526.pdf
-Soukosync.Umbrella
+# DEV-BackendTask-180520-1526
+Project name: Soukosync, using umbrella: Soukosync.Umbrella
 
 
 ## Configuration
@@ -31,7 +31,15 @@ authentication mode. The execution interval can be set in the environment
 variable `INTERVAL_RETRY_TOKEN_SECONDS`
 
 
-### Warehouse synchronization
+## Execution through Docker
+
+Please ensure authentication environment variables have been set.
+```
+cd soukosync_umbrella
+docker-compose build && docker-compose up
+```
+
+## Warehouse synchronization
 
 ### Automatic
 The scheduler will call the sync operation periodically. The interval can be
@@ -49,7 +57,7 @@ it is too long, `count` query parameter can be specified to shorten it, e.g.
 Some examples:
 
 ```
- j   develop  …  trabajo  pulpo  soukosync_umbrella  7  1  curl -X PATCH http://localhost/api/syncall | python -m json.tool
+curl -X PATCH http://localhost:5000/api/syncall | python -m json.tool
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100    74  100    74    0     0    174      0 --:--:-- --:--:-- --:--:--   174
@@ -58,7 +66,9 @@ Some examples:
     "date": "2020-08-16T11:34:23.588901Z",
     "response": "ok"
 }
- j   develop  …  trabajo  pulpo  soukosync_umbrella  curl -X PATCH http://localhost/api/syncall | python -m json.tool
+
+
+curl -X PATCH http://localhost:5000/api/syncall | python -m json.tool
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   116  100   116    0     0    219      0 --:--:-- --:--:-- --:--:--   219
@@ -71,7 +81,9 @@ Some examples:
     "date": "2020-08-16T11:34:32.630631Z",
     "response": "error"
 }
- j   develop  …  trabajo  pulpo  soukosync_umbrella  curl -X PATCH http://localhost/api/syncast | python -m json.tool
+
+
+curl -X PATCH http://localhost:5000/api/syncast | python -m json.tool
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100    97  100    97    0     0   6062      0 --:--:-- --:--:-- --:--:--  6062
@@ -80,7 +92,9 @@ Some examples:
     "date": "2020-08-16T11:34:37.263700Z",
     "response": "ok"
 }
- j   develop  …  trabajo  pulpo  soukosync_umbrella  curl http://localhost/api/synlast | python -m json.tool
+
+
+curl http://localhost:5000/api/synlast | python -m json.tool
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   320  100   320    0     0  20000      0 --:--:-- --:--:-- --:--:-- 20000
@@ -111,7 +125,9 @@ Some examples:
         }
     ]
 }
- j   develop  …  trabajo  pulpo  soukosync_umbrella  curl http://localhost/api/synlast?count=1 | python -m json.tool
+
+
+curl http://localhost/api:5000/synlast?count=1 | python -m json.tool
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   128  100   128    0     0   5565      0 --:--:-- --:--:-- --:--:--  5565
@@ -128,7 +144,9 @@ Some examples:
         }
     ]
 }
- j   develop  …  trabajo  pulpo  soukosync_umbrella  curl -X PATCH http://localhost/api/syncall | python -m json.tool
+
+
+curl -X PATCH http://localhost:5000/api/syncall | python -m json.tool
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100    74  100    74    0     0    110      0 --:--:-- --:--:-- --:--:--   110
@@ -137,9 +155,9 @@ Some examples:
     "date": "2020-08-16T11:35:47.295269Z",
     "response": "ok"
 }
- j   develop  …  trabajo  pulpo  soukosync_umbrella  
- j   develop  …  trabajo  pulpo  soukosync_umbrella  
- j   develop  …  trabajo  pulpo  soukosync_umbrella  curl http://localhost/api/synlast | python -m json.tool
+
+
+curl http://localhost:5000/api/synlast | python -m json.tool
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   513  100   513    0     0  36642      0 --:--:-- --:--:-- --:--:-- 36642
