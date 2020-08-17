@@ -20,8 +20,8 @@ token or user/password credentials:
 In case both manual token and credentials are set, manual token takes
 precedence.
 
-Manual token is assumed to never expire. The token will be automatically fetched
-and renewed when using credentials.
+Manual token is assumed to be always valid and never expire. The token will be
+automatically fetched and renewed when using credentials.
 
 
 #### Token retrieval error fallback

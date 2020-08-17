@@ -30,12 +30,12 @@ defmodule Soukosync.Caller do
     GenServer.cast(@me, :check_user)
   end
 
+
   def init(_) do
     Logger.info("Soukosync.Caller: GenServer init().")
-    current_user = get_current_user()
     {
       :ok,
-      { current_user, Qex.new }
+      { nil, Qex.new }
     }
   end
 
@@ -70,8 +70,8 @@ defmodule Soukosync.Caller do
     }
   end
 
-  def handle_call(:sync, _from, { current_user, last_syncs } ) when current_user ==nil do
-    Logger.warn "   Soukosync.Caller: sync_and_push_queue: still nil. Doing nothing."
+  def handle_call(:sync, _from, { current_user, last_syncs } ) when current_user == nil do
+    Logger.warn "Soukosync.Caller: :sync current_user is nil. Doing nothing. If using API_TOKEN auth, please ensure it is valid or unset it and set API_USER and API_PASSWORD"
     {
       :reply,
       {:error, "current user is nil"},
@@ -88,7 +88,8 @@ defmodule Soukosync.Caller do
     }
   end
 
-  def handle_cast(:sync, { current_user, last_syncs } ) when current_user==nil do
+  def handle_cast(:sync, { current_user, last_syncs } ) when current_user == nil do
+    Logger.warn "Soukosync.Caller: :sync current_user is nil. Doing nothing. If using API_TOKEN auth, please ensure it is valid or unset it and set API_USER and API_PASSWORD"
     {
       :noreply,
       { current_user,  last_syncs }
@@ -104,6 +105,7 @@ defmodule Soukosync.Caller do
   end
 
   def handle_cast(:check_user, { current_user, last_syncs } ) when current_user == nil do
+    Logger.warn "Soukosync.Caller: :check_user current_user is nil"
     current_user = get_current_user()
     {
       :noreply,

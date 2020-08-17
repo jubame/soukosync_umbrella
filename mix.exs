@@ -8,7 +8,7 @@ defmodule Soukosync.Umbrella.MixProject do
       deps: deps(),
       releases: [
         soukosync: [
-          version: "0.1.0",
+          version: "0.1.1",
           applications: [soukosync: :permanent, soukosync_web: :permanent]
         ]
       ]
