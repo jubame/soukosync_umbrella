@@ -23,8 +23,10 @@ defmodule Soukosync.API do
   def http_post(path, body_map) do
 
     headers = ["Content-Type": "application/json"]
-    options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 500]
+    # DNS timeout options are not affected by timeout or recv_timeout
+    options = [ssl: [{:versions, [:'tlsv1.2']}], timeout: 800, recv_timeout: 500]
 
+    IO.puts("http_post #{DateTime.utc_now()}")
     with {:ok, body_json} = Poison.encode(body_map),
          {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- HTTPoison.post(
                                                                        build_api_url(path),
@@ -34,6 +36,7 @@ defmodule Soukosync.API do
                                                                      ),
          {:ok, data} <- Poison.decode(body)
     do
+      IO.puts("http_post in #{DateTime.utc_now()}")
       {:ok, data}
     end
 
@@ -44,7 +47,10 @@ defmodule Soukosync.API do
   def http_auth_get_decode(path) do
 
     headers = []
-    options = [ssl: [{:versions, [:'tlsv1.2']}], recv_timeout: 500]
+    # DNS timeout options are not affected by timeout or recv_timeout
+    options = [ssl: [{:versions, [:'tlsv1.2']}], timeout: 800, recv_timeout: 500]
+
+    IO.puts("http_auth_get_decode #{DateTime.utc_now()}")
 
     with {:ok, token} <- TokenStore.get_token(),
          {:ok, %HTTPoison.Response{status_code: 200, body: body}} <- Helpers.check_unauthorized(
@@ -55,6 +61,7 @@ defmodule Soukosync.API do
                                                                      ),
          {:ok, data} <- Poison.decode(body)
     do
+      IO.puts("http_auth_get_decode in #{DateTime.utc_now()}")
       {:ok, data}
     end
   end

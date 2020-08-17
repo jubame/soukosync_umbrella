@@ -24,7 +24,11 @@ defmodule Soukosync.TokenStore do
   end
 
   def get_token() do
-    GenServer.call(@me, :get_token)
+    # Fuck this shit: https://github.com/docker/compose/issues/5010
+    # no dns_opt in docker-compose V3, can't specify timeout
+    # ... so I am stuck at 15 second DNS timeout
+    # HTTPoison's timeout and recv_timeout can't change this.
+    GenServer.call(@me, :get_token, 60_000)
   end
 
   defp get_retry_time do
@@ -36,6 +40,7 @@ defmodule Soukosync.TokenStore do
   end
 
   defp schedule_renew(seconds), do: Process.send_after(self(), :renew, seconds * 1000)
+  defp schedule_init(seconds), do: Process.send_after(self(), :init, seconds * 1000)
 
   defp fetch_token do
     fetch_token(System.get_env("API_USER"), System.get_env("API_PASSWORD"))
@@ -90,7 +95,12 @@ defmodule Soukosync.TokenStore do
 
   def init(_) do
     Logger.info("Soukosync.TokenStore: GenServer init(). Retry interval #{get_retry_time()} seconds")
-    {:ok, init_token()}
+    schedule_init(1)
+    {:ok, nil}
+  end
+
+  def handle_info(:init, nil) do
+    {:noreply, init_token(), {:continue, :caller_check_user}}
   end
 
   def handle_call(:state, _from, token ) do
