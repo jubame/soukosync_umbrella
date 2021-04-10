@@ -1,6 +1,9 @@
 # DEV-BackendTask-180520-1526
 Project name: Soukosync, using umbrella: Soukosync.Umbrella
 
+Periodically queries API and upserts user and related warehouses to a local
+database.
+
 
 ## Configuration
 
@@ -37,6 +40,13 @@ Please ensure authentication environment variables have been set.
 ```
 cd soukosync_umbrella
 docker-compose build && docker-compose up
+```
+
+If docker is being run with sudo and you want to use environment variables,
+you can do so by:
+
+```
+sudo API_USER=<api_user> API_PASSWORD=<api_password> docker-compose up
 ```
 
 ## Warehouse synchronization
@@ -206,6 +216,9 @@ curl http://localhost:5000/api/synlast | python -m json.tool
 
 
 ## Automated tests
+
+This requires a local PostgreSQL running:
+
 ```
 cd soukosync_umbrella
 mix test
